@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ConnectSix</string>
+    <string name="user1_name">User1NickName</string>
+    <string name="user2_name">User2NickName</string>
+    <string name="user1_record">User1Record</string>
+    <string name="user2_record">User2Record</string>
+</resources>
