@@ -48,7 +48,6 @@
             app:layout_constraintEnd_toStartOf="@id/user2Nickname"
             android:layout_margin="10dp"
             app:layout_constraintBaseline_toBaselineOf="@id/user2Nickname"
-
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -60,24 +59,24 @@
         app:layout_constraintTop_toBottomOf="@id/user2Layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/user1Layout"
-        >
+        app:layout_constraintBottom_toTopOf="@id/user1Layout">
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            >
+            app:layout_constraintVertical_bias="0.0">
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="horizontal"
-                >
+                android:layout_gravity="center">
 
                 <GridLayout
                     android:layout_width="wrap_content"
@@ -85,16 +84,14 @@
                     android:columnCount="19"
                     android:orientation="horizontal"
                     android:rowCount="19"
-                    android:layout_gravity="fill"
-                    >
+                    android:layout_gravity="center">
 
                     <!--0행-->
                     <ImageButton
                         android:id="@+id/board0000"
                         android:background="#00FFFFFF"
                         android:src="@drawable/left_top_corner64"
-                        android:focusable="true"
-                        android:clickable="true"/>
+                        />
 
                     <ImageButton
                         android:id="@+id/board0001"
