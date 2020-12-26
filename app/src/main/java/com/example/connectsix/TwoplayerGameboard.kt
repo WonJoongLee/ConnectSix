@@ -6,25 +6,40 @@ import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
+import java.lang.Boolean.FALSE
 
 class TwoplayerGameboard : AppCompatActivity() {
 
     var clickCnt = 64 // 초기 확대 값(default 값)은 53
-    var database = FirebaseDatabase.getInstance()
-    var roomId = database.getReference().child("roomId").child("tempRoomId") // TODO 방 새로 만드는 함수 만든 후 path에 방 위치를 넣어야 함
 
-    @SuppressLint("ShowToast")
+    var database = FirebaseDatabase.getInstance().reference.child("roomId").child("tempRoomId")
+
+    var player1Name : String = ""
+    var player2Name : String = ""
+
+    var turnNum : Int = 1 // turnNum 변수는 돌이 몇 개 착수되었는지 확인하기 위한 변수
+                          // 이거를 하나씩 올리면서 지금까지 돌이 몇개 올려졌는지 확인하고
+                          // DB의 stone+n값의 n값을 설정한다.
+
+    // 19*19 사이즈의 Boolean 배열(초기값 false)을 만들고 착수한 곳의 좌표를 확인한 후 true로 바꿔주기기
+    var stoneCheckArray: Array<BooleanArray> = Array<BooleanArray>(19){ BooleanArray(19) } // 해당 위치에 돌이 착수되었는지 확인하는 array
+    var stoneColorArray: Array<IntArray> = Array<IntArray>(19){ IntArray(19) } // 해당 위치에 무슨 색의 돌이 착수되었는지 확인하는 array 0 : 착수 안됨, 1 : 검은색, 2: 흰색
+
+   @SuppressLint("ShowToast")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.twoplayer_gameboard)
 
-        var Id = roomId.child("stone1").child("playerId") // TODO 201226은 여기서부터 서버와 통신하면서 멀티플레이 기능 만들면 된다.
+        getUserName()
 
-        println("@@@@$Id")
-
-        Log.d("intentCheck", "SUCCESS : TwoplayerGameboard.kt")
+       for(i in stoneCheckArray.indices){
+           for( j in stoneCheckArray[i].indices){
+               stoneCheckArray[i][j] = false // 돌이 모두 착수가 안된 상태로 초기화
+               stoneColorArray[i][j] = 0 // 초기에는 돌이 착수 안됐음을 표시
+           }
+       }
 
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
         * default 값은 64*/
@@ -57,9 +72,51 @@ class TwoplayerGameboard : AppCompatActivity() {
             }
         }
 
+       database.child("stones").addChildEventListener(object:ChildEventListener{
+           override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+               var coX : String = snapshot.child("coX").getValue().toString()
+               var coXInt = coX.toInt()
+
+               var coY : String = snapshot.child("coY").getValue().toString()
+               var coYInt : Int = coY.toInt()
+
+               var boardCoordinate : String = changeCoordinateToBoard(coXInt, coYInt)
+               var target : Int = resources.getIdentifier(boardCoordinate ,"id", packageName)
+               var imageButton : ImageButton = findViewById(target)
+
+               when(turnNum%4){
+                   1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
+                       setStoneDependOnSize(imageButton, "black", coXInt, coYInt)
+                   }
+                   2,3 ->{ // 2,3이면 player 2 차례다
+                       setStoneDependOnSize(imageButton, "white", coXInt, coYInt)
+                   }
+               }
+               println("@@@turnNum is $turnNum")
+               turnNum++
+           }
+
+           override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+           }
+
+           override fun onChildRemoved(snapshot: DataSnapshot) {
+
+           }
+
+           override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+
+           }
+
+           override fun onCancelled(error: DatabaseError) {
+
+           }
+
+       })
+
         for(i in 0..18){
             var str = "0"
             var boardStr = "board"
+            var stoneStr = "stone"
             var firstNum = if(i<10) str.plus(i.toString()) else i.toString() // board 뒤에 바로 붙는 첫 번째 수
 
             boardStr = boardStr.plus(firstNum) // board00까지 완성
@@ -73,21 +130,100 @@ class TwoplayerGameboard : AppCompatActivity() {
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
                 imageButton.setOnClickListener {
-                    when(clickCnt){
-                        16->{ // size가 16이면
-                            imageButton.setImageResource(R.drawable.circle_white16)
+
+                    var stoneStrUpload : String = ""
+
+                    stoneStrUpload = "stone".plus((turnNum).toString()) // "stone0" 꼴로 stoneStr에 저장이 된다.
+                                                                     // 그 후 turnNum에 1을 더해 turn이 한 번 돌아갔음을 의미한다.
+
+                    if(turnNum == 0){//만약 돌을 처음 두는 것이라면 앞으로 둘 돌들을 저장한 stones를 Firebase에 추가한다.
+                        database.push().setValue("stones") // 처음 돌을 두는 과정이라면 push한다
+                    }
+                    when(turnNum%4){
+                        1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
+                           val stoneData : Turn = Turn(player1Name, stoneStrUpload, i, j)
+                            setStoneDependOnSize(imageButton, "black", i, j)
+                            database.child("stones").push().setValue(stoneData)
                         }
-                        32->{ // size가 32이면
-                            imageButton.setImageResource(R.drawable.circle_white32)
-                        }
-                        64->{ // size가 64이면
-                            imageButton.setImageResource(R.drawable.circle_white64)
+                        2,3 ->{ // 2,3이면 player 2 차례다
+                            val stoneData : Turn = Turn(player2Name, stoneStrUpload, i, j)
+                            setStoneDependOnSize(imageButton, "white", i, j)
+                            database.child("stones").push().setValue(stoneData)
                         }
                     }
+
+                    println("${turnNum}번째 돌 착수")
+                    stoneCheckArray[i][j] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
+                    imageButton.isClickable = false // 한 번 돌이 착수된 곳은 다시 클릭하지 못하도록 설정
                 }
             }
         }
 
+    }
+
+    /*지금 화면에 보여지는 한 타일(바둑판 한 칸의 사이즈)의 크기(16,32,64)와 플레이어의 차례에 따라 색을 구분해
+    * 바둑판에 돌을 두는 함수입니다.*/
+    private fun setStoneDependOnSize(imageButton: ImageButton, color : String, i : Int, j : Int){
+        when(clickCnt){
+            16->{ // size가 16이면
+                if(color == "white") {
+                    imageButton.setImageResource(R.drawable.circle_white16)
+                    stoneColorArray[i][j] = 2
+                } // player1차례면 black
+                else {
+                    imageButton.setImageResource(R.drawable.circle_black16)
+                    stoneColorArray[i][j] = 1
+                } // player2 차례면 white
+
+            }
+            32->{ // size가 32이면
+                if(color == "white"){
+                    imageButton.setImageResource(R.drawable.circle_white32)
+                    stoneColorArray[i][j] = 2
+                }
+                else {
+                    imageButton.setImageResource(R.drawable.circle_black32)
+                    stoneColorArray[i][j] = 1
+                }
+            }
+            64->{ // size가 64이면
+                if(color == "white") {
+                    imageButton.setImageResource(R.drawable.circle_white64)
+                    stoneColorArray[i][j] = 2
+                }
+                else {
+                    imageButton.setImageResource(R.drawable.circle_black64)
+                    stoneColorArray[i][j] = 1
+                }
+            }
+        }
+    }
+
+    fun changeCoordinateToBoard(x : Int, y : Int) : String{
+        val tempXStr : String = if(x<10) "0".plus(x.toString()) else x.toString()
+        val tempYStr : String = if(y<10) "0".plus(y.toString()) else y.toString()
+        return "board".plus(tempXStr).plus(tempYStr)
+    }
+
+    /* Initialize User Name
+    *  이 코드에서 유저 이름 사용할 수 있도록 초기화 시키는 부분 */
+    fun getUserName(){
+        database.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for(i in snapshot.children){
+                    if(i.key.equals("player1Id")){
+                        player1Name = i.value as String
+                    }
+                    if(i.key.equals("player2Id")){
+                        player2Name = i.value as String
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Name Error", "Can't get user name")
+            }
+        })
     }
 
     fun zoomBoard32(){
@@ -111,6 +247,16 @@ class TwoplayerGameboard : AppCompatActivity() {
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
+                when(stoneColorArray[i][j]){// 해당 위치(i,j)에 돌이 착수가 되었다면
+                    1 -> {
+                        imageButton.setImageResource(R.drawable.circle_black32)
+                        continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
+                    }
+                    2 -> {
+                        imageButton.setImageResource(R.drawable.circle_white32)
+                        continue
+                    }
+                }
                 if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point32)
                 else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left32) // 왼쪽 부분일 때
                 else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner32) // 왼쪽 위 코너일 때, (0,0)일 때
@@ -149,6 +295,16 @@ class TwoplayerGameboard : AppCompatActivity() {
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
+                when(stoneColorArray[i][j]){// 해당 위치(i,j)에 돌이 착수가 되었다면
+                    1 -> {
+                        imageButton.setImageResource(R.drawable.circle_black64)
+                        continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
+                    }
+                    2 -> {
+                        imageButton.setImageResource(R.drawable.circle_white64)
+                        continue
+                    }
+                }
                 if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point64)
                 else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left64) // 왼쪽 부분일 때
                 else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner64) // 왼쪽 위 코너일 때, (0,0)일 때
@@ -187,6 +343,16 @@ class TwoplayerGameboard : AppCompatActivity() {
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
+                when(stoneColorArray[i][j]){// 해당 위치(i,j)에 돌이 착수가 되었다면
+                    1 -> {
+                        imageButton.setImageResource(R.drawable.circle_black16)
+                        continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
+                    }
+                    2 -> {
+                        imageButton.setImageResource(R.drawable.circle_white16)
+                        continue
+                    }
+                }
                 if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point16)
                 else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left16) // 왼쪽 부분일 때
                 else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner16) // 왼쪽 위 코너일 때, (0,0)일 때
