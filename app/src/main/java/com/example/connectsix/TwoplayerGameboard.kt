@@ -1,18 +1,13 @@
 package com.example.connectsix
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcher
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
-import java.lang.Boolean.FALSE
 
 class TwoplayerGameboard : AppCompatActivity() {
 
@@ -22,6 +17,12 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     var player1Name : String = ""
     var player2Name : String = ""
+    var myNickName : String = ""
+    var enemyName : String = ""
+
+    var nameFinished : Boolean = false
+    var isPlayer1Name : Boolean = false
+    var isPlayer2Name : Boolean = false
 
     var turnNum : Int = 1 // turnNum 변수는 돌이 몇 개 착수되었는지 확인하기 위한 변수
                           // 이거를 하나씩 올리면서 지금까지 돌이 몇개 올려졌는지 확인하고
@@ -37,15 +38,24 @@ class TwoplayerGameboard : AppCompatActivity() {
 
 
 
-    @SuppressLint("ShowToast")
+
+    @SuppressLint("ShowToast", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
-       super.onCreate(savedInstanceState)
-       setContentView(R.layout.twoplayer_gameboard)
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.twoplayer_gameboard)
+
+        if(intent.hasExtra("player1NickName")) myNickName = intent.getStringExtra("player1NickName").toString() // MainActivity에서 설정한 이름을 intent로 불러와서 player1Name에 저장한다.
 
 
-       getUserName()
+         getUserName() // 이름 설정을 합니다.
 
-       initBoards()
+
+        //database.child("player1Id").setValue(player1Name) // player1Name을 서버에 저장합니다.
+        //user1Nickname.text = player1Name
+
+
+        initBoards()
+
 
 
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
@@ -173,35 +183,186 @@ class TwoplayerGameboard : AppCompatActivity() {
     /*지금 화면에 보여지는 한 타일(바둑판 한 칸의 사이즈)의 크기(16,32,64)와 플레이어의 차례에 따라 색을 구분해
     * 바둑판에 돌을 두는 함수입니다.*/
     private fun setStoneDependOnSize(imageButton: ImageButton, color : String, i : Int, j : Int){
+        println("i : $i, j : $j")
         when(clickCnt){
             16->{ // size가 16이면
-                if(color == "white") {
-                    imageButton.setImageResource(R.drawable.circle_white16)
+                if(color == "white") { // 흰색 둘 차례면
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_circle_white16)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_circle_white16)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_circle_white16)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_circle_white16)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_circle_white16)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_circle_white16)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_circle_white16)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_circle_white16)
+                    }
+                    else{ // 나머지일 때
+                        imageButton.setImageResource(R.drawable.circle_white16)
+                    }
                     stoneColorArray[i][j] = 2
-                } // player1차례면 black
-                else {
-                    imageButton.setImageResource(R.drawable.circle_black16)
+                }
+                else { // 검은색 둘 차례면
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_circle_black16)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_circle_black16)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_circle_black16)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_circle_black16)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_circle_black16)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_circle_black16)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_circle_black16)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_circle_black16)
+                    }
+                    else{ // 나머지일 때
+                        imageButton.setImageResource(R.drawable.circle_black16)
+                    }
                     stoneColorArray[i][j] = 1
-                } // player2 차례면 white
+                }
 
             }
             32->{ // size가 32이면
                 if(color == "white"){
-                    imageButton.setImageResource(R.drawable.circle_white32)
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_circle_white32)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_circle_white32)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_circle_white32)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_circle_white32)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_circle_white32)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_circle_white32)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_circle_white32)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_circle_white32)
+                    }
+                    else{ // 나머지일 때
+                        imageButton.setImageResource(R.drawable.circle_white32)
+                    }
                     stoneColorArray[i][j] = 2
                 }
                 else {
-                    imageButton.setImageResource(R.drawable.circle_black32)
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_circle_black32)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_circle_black32)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_circle_black32)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_circle_black32)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_circle_black32)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_circle_black32)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_circle_black32)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_circle_black32)
+                    }
+                    else{ // 나머지일 때
+                        imageButton.setImageResource(R.drawable.circle_black32)
+                    }
                     stoneColorArray[i][j] = 1
                 }
             }
             64->{ // size가 64이면
                 if(color == "white") {
-                    imageButton.setImageResource(R.drawable.circle_white64)
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_circle_white64)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_circle_white64)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_circle_white64)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_circle_white64)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_circle_white64)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_circle_white64)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_circle_white64)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_circle_white64)
+                    }
+                    else{ // 나머지일 때
+                        imageButton.setImageResource(R.drawable.circle_white64)
+                    }
                     stoneColorArray[i][j] = 2
                 }
                 else {
-                    imageButton.setImageResource(R.drawable.circle_black64)
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_circle_black64)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_circle_black64)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_circle_black64)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_circle_black64)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_circle_black64)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_circle_black64)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_circle_black64)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_circle_black64)
+                    }
+                    else{ // 나머지일 때
+                        imageButton.setImageResource(R.drawable.circle_black64)
+                    }
                     stoneColorArray[i][j] = 1
                 }
             }
@@ -219,10 +380,53 @@ class TwoplayerGameboard : AppCompatActivity() {
     fun getUserName(){
         database.addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
+                println("##### 0번들어옴")
                 for(i in snapshot.children){
-                    if(i.key.equals("player1Id")){
-                        player1Name = i.value as String
+                    if(i.key.equals("player1Id") && i.value.toString().isNotEmpty() && !nameFinished){ // player1Id가 존재한다면
+                        nameFinished = true
+                        isPlayer1Name = true
+                        println("##### 1번들어옴")
+                        user1Nickname.text = myNickName
+                        user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
+                        enemyName = i.value.toString()
+                        database.child("player2Id").setValue(myNickName) // 나의 이름을 player2에 저장합니다.
+                        break
                     }
+                    else if(i.key.equals("player2Id") && i.value.toString().isNotEmpty() && !nameFinished){ // player2Id에 이미 누가 있을 경우
+                        nameFinished = true
+                        isPlayer2Name = true
+                        println("##### 2번들어옴")
+                        user1Nickname.text = myNickName
+                        user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
+                        enemyName = i.value.toString()
+                        database.child("player1Id").setValue(myNickName) // 나의 이름을 player1에 저장합니다.
+                        break
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+
+        if(!isPlayer1Name && !isPlayer2Name && !nameFinished){ // 만약 빈 방일 경우에, player1에 myNickname 설정
+            println("##### $isPlayer1Name $isPlayer2Name $nameFinished")
+            nameFinished = true
+            isPlayer1Name = true
+            user1Nickname.text = myNickName
+            user2Nickname.text = "Waiting..."
+            database.child("player1Id").setValue(myNickName) // 나의 이름을 player1에 저장합니다.
+        }
+
+        /*if(intent.hasExtra("player1NickName")) player1Name = intent.getStringExtra("player1NickName").toString() // MainActivity에서 설정한 이름을 intent로 불러와서 player1Name에 저장한다.
+        database.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for(i in snapshot.children){
+                    /*if(i.key.equals("player1Id")){
+                        player1Name = i.value as String
+                    }*/
                     if(i.key.equals("player2Id")){
                         player2Name = i.value as String
                     }
@@ -232,7 +436,9 @@ class TwoplayerGameboard : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
                 Log.e("Name Error", "Can't get user name")
             }
-        })
+        })*/
+
+
     }
 
     fun zoomBoard32(){

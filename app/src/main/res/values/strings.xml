@@ -1,7 +1,11 @@
 <resources>
     <string name="app_name">ConnectSix</string>
+    <string name="mainAppName">Connect Six</string>
+    <string name="gameStart">Game Start</string>
     <string name="user1_name">User1NickName</string>
     <string name="user2_name">User2NickName</string>
     <string name="user1_record">User1Record</string>
     <string name="user2_record">User2Record</string>
+    <string name="create_account">Create Account</string>
+    <string name="nickname">Nickname</string>
 </resources>
