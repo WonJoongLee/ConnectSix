@@ -1,10 +1,14 @@
 package com.example.connectsix
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
@@ -23,23 +27,26 @@ class TwoplayerGameboard : AppCompatActivity() {
                           // 이거를 하나씩 올리면서 지금까지 돌이 몇개 올려졌는지 확인하고
                           // DB의 stone+n값의 n값을 설정한다.
 
+
+
     // 19*19 사이즈의 Boolean 배열(초기값 false)을 만들고 착수한 곳의 좌표를 확인한 후 true로 바꿔주기기
     var stoneCheckArray: Array<BooleanArray> = Array<BooleanArray>(19){ BooleanArray(19) } // 해당 위치에 돌이 착수되었는지 확인하는 array
     var stoneColorArray: Array<IntArray> = Array<IntArray>(19){ IntArray(19) } // 해당 위치에 무슨 색의 돌이 착수되었는지 확인하는 array 0 : 착수 안됨, 1 : 검은색, 2: 흰색
 
-   @SuppressLint("ShowToast")
+    var winnerStr : String = ""
+
+
+
+    @SuppressLint("ShowToast")
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.twoplayer_gameboard)
+       super.onCreate(savedInstanceState)
+       setContentView(R.layout.twoplayer_gameboard)
 
-        getUserName()
 
-       for(i in stoneCheckArray.indices){
-           for( j in stoneCheckArray[i].indices){
-               stoneCheckArray[i][j] = false // 돌이 모두 착수가 안된 상태로 초기화
-               stoneColorArray[i][j] = 0 // 초기에는 돌이 착수 안됐음을 표시
-           }
-       }
+       getUserName()
+
+       initBoards()
+
 
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
         * default 값은 64*/
@@ -93,7 +100,9 @@ class TwoplayerGameboard : AppCompatActivity() {
                    }
                }
                println("@@@turnNum is $turnNum")
-               turnNum++
+               turnNum++ // 한 턴이 진행되었음을 의미. 중요한 부분
+               judgeVictory()
+               //printBoard()
            }
 
            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -367,4 +376,142 @@ class TwoplayerGameboard : AppCompatActivity() {
             }
         }
     }
+
+    fun printColorBoard(){
+        println("@@@@PRINT BOARD@@@@")
+        Log.d("Print Board", "Print Board")
+        for(i in 0..18){
+            print("$i : ".padStart(3))
+            for(j in 0..18){
+                print("${stoneColorArray[i][j]}".padStart(8))
+            }
+            println()
+        }
+    }
+
+    fun printBoard(){
+        println("@@@@PRINT BOARD@@@@")
+        for(i in 0..18){
+            for(j in 0..18){
+                print("${stoneCheckArray[i][j]}".padStart(8))
+            }
+            println()
+        }
+    }
+
+    fun judgeVictory(){
+        for(i in 0..13){ // 세로로 다 맞았을 때
+            for(j in 0..18){
+                if(stoneColorArray[i][j] == 1 && stoneColorArray[i+1][j] == 1 && stoneColorArray[i+2][j] == 1 && stoneColorArray[i+3][j] == 1 && stoneColorArray[i+4][j] == 1 && stoneColorArray[i+5][j] ==  1){
+                    winnerStr = player1Name
+                    Toast.makeText(this, "1$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards() // 게임 승리 판정이 나면 초기화
+                    turnNum = 1
+                }
+                else if(stoneColorArray[i][j] == 2 && stoneColorArray[i+1][j] == 2 && stoneColorArray[i+2][j] == 2 && stoneColorArray[i+3][j] == 2 && stoneColorArray[i+4][j] == 2 && stoneColorArray[i+5][j] ==  2){
+                    winnerStr = player2Name
+                    Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+            }
+        }
+
+        for(j in 0..13){ // 가로로 다 맞았을 때
+            for(i in 0..18){
+                if(stoneColorArray[i][j] == 1 && stoneColorArray[i][j+1] == 1 && stoneColorArray[i][j+2] == 1 && stoneColorArray[i][j+3] == 1 && stoneColorArray[i][j+4] == 1 && stoneColorArray[i][j+5] ==  1){
+                    winnerStr = player1Name
+                    Toast.makeText(this, "3$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+                else if(stoneColorArray[i][j] == 2 && stoneColorArray[i][j+1] == 2 && stoneColorArray[i][j+2] == 2 && stoneColorArray[i][j+3] == 2 && stoneColorArray[i][j+4] == 2 && stoneColorArray[i][j+5] ==  2){
+                    winnerStr = player2Name
+                    Toast.makeText(this, "4$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+            }
+        }
+
+
+        for(j in 0..13){ // \(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
+            for(i in 0..13){
+                if(stoneColorArray[i][j] == 1 && stoneColorArray[i+1][j+1] == 1 && stoneColorArray[i+2][j+2] == 1 && stoneColorArray[i+3][j+3] == 1 && stoneColorArray[i+4][j+4] == 1 && stoneColorArray[i+5][j+5] ==  1){
+                    winnerStr = player1Name
+                    Toast.makeText(this, "5$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+                else if(stoneColorArray[i][j] == 2 && stoneColorArray[i+1][j+1] == 2 && stoneColorArray[i+2][j+2] == 2 && stoneColorArray[i+3][j+3] == 2 && stoneColorArray[i+4][j+4] == 2 && stoneColorArray[i+5][j+5] ==  2){
+                    winnerStr = player2Name
+                    Toast.makeText(this, "6$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+            }
+        }
+
+        for(j in 0..13){ // /(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
+            for(i in 0..13){
+                if(stoneColorArray[19-i-1][j] == 1 && stoneColorArray[19-i-2][j+1] == 1 && stoneColorArray[19-i-3][j+2] == 1 && stoneColorArray[19-i-4][j+3] == 1 && stoneColorArray[19-i-5][j+4] == 1 && stoneColorArray[19-i-6][j+5] ==  1){
+                    winnerStr = player1Name
+                    Toast.makeText(this, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+                else if(stoneColorArray[19-i-1][j] == 2 && stoneColorArray[19-i-2][j+1] == 2 && stoneColorArray[19-i-3][j+2] == 2 && stoneColorArray[19-i-4][j+3] == 2 && stoneColorArray[19-i-5][j+4] == 2 && stoneColorArray[19-i-6][j+5] ==  2){
+                    winnerStr = player2Name
+                    Toast.makeText(this, "8$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    printColorBoard()
+                    initBoards()
+                    turnNum = 1
+                }
+            }
+        }
+    }
+
+
+    var backKeyPressedTime : Long = 0 // 뒤로가기 버튼 클릭 시간 확인을 위한 변수
+    //뒤로가기 버튼 클릭 시
+    override fun onBackPressed(){
+        if(System.currentTimeMillis() > backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 지났다면연(연속적으로 클릭한 것이 아닐 때)
+            backKeyPressedTime = System.currentTimeMillis()
+            Toast.makeText(this, "주의 : 한번 더 누르시면 게임이 나가집니다!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if(System.currentTimeMillis() <= backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
+            //initBoards()
+            //turnNum = 1
+            database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
+            Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
+
+    private fun initBoards(){
+        println("Initializing...")
+        for(i in stoneCheckArray.indices){
+            for( j in stoneCheckArray[i].indices){
+                stoneCheckArray[i][j] = false // 돌이 모두 착수가 안된 상태로 초기화
+            }
+        }
+        for(i in stoneColorArray.indices){
+            for( j in stoneColorArray[i].indices){
+                stoneColorArray[i][j] = 0 // 초기에는 돌이 착수 안됐음을 표시
+            }
+        }
+        printColorBoard()
+    }
+
 }
+
+
