@@ -33,9 +33,9 @@ class MainActivity : AppCompatActivity() {
                 if(newNickname.length < 3){ // 아이디가 두 글자 이하이면 다시 입력하라고 나옵니다.
                     Toast.makeText(this, "Please enter at least three characters!", Toast.LENGTH_SHORT).show()
                 }else{
-                    var updateUserName = mutableMapOf<String, Any>()
-                    updateUserName["userName"] = newNickname // Firebase에 update할 값 준비
-                    FirebaseDatabase.getInstance().reference.updateChildren(updateUserName)//Firebase에 설정한 이름 탑재
+                    //var updateUserName = mutableMapOf<String, Any>()
+                    //updateUserName["userName"] = newNickname // Firebase에 update할 값 준비
+                    //FirebaseDatabase.getInstance().reference.updateChildren(updateUserName)//Firebase에 설정한 이름 탑재
                     Toast.makeText(this, "Login Success", Toast.LENGTH_SHORT).show()
 
                     val user : User = User(newNickname, "0", "0", "0%")

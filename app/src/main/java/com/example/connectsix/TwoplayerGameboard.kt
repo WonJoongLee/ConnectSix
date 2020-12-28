@@ -2,6 +2,8 @@ package com.example.connectsix
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Message
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
@@ -20,6 +22,9 @@ class TwoplayerGameboard : AppCompatActivity() {
     var myNickName : String = ""
     var enemyName : String = ""
 
+    var serverUser1Name : Boolean = false
+    var serverUser2Name : Boolean = false
+
     var nameFinished : Boolean = false
     var isPlayer1Name : Boolean = false
     var isPlayer2Name : Boolean = false
@@ -36,9 +41,6 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     var winnerStr : String = ""
 
-
-
-
     @SuppressLint("ShowToast", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,17 +48,8 @@ class TwoplayerGameboard : AppCompatActivity() {
 
         if(intent.hasExtra("player1NickName")) myNickName = intent.getStringExtra("player1NickName").toString() // MainActivity에서 설정한 이름을 intent로 불러와서 player1Name에 저장한다.
 
-
-         getUserName() // 이름 설정을 합니다.
-
-
-        //database.child("player1Id").setValue(player1Name) // player1Name을 서버에 저장합니다.
-        //user1Nickname.text = player1Name
-
-
+        getUserName() // 이름 설정을 합니다.
         initBoards()
-
-
 
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
         * default 값은 64*/
@@ -89,7 +82,47 @@ class TwoplayerGameboard : AppCompatActivity() {
             }
         }
 
-       database.child("stones").addChildEventListener(object:ChildEventListener{
+        database.child("player1Id").addChildEventListener(object:ChildEventListener{
+            @SuppressLint("ResourceType")
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                user1Nickname.text = findViewById(R.string.waiting)
+            }
+            @SuppressLint("ResourceType")
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                user1Nickname.text = findViewById(R.string.waiting)
+            }
+            @SuppressLint("ResourceType")
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                user1Nickname.text = findViewById(R.string.waiting)
+            }
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        })
+        //TODO player1Id와 player2Id가 서버에서 삭제되었을 때(즉 상대방이 나갔을 때) 상대방 닉네임 뜨는 부분을 Waiting...으로 처리해야 함
+        database.child("player2Id").addChildEventListener(object:ChildEventListener{
+            @SuppressLint("ResourceType")
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                user2Nickname.text = findViewById(R.string.waiting)
+            }
+
+            @SuppressLint("ResourceType")
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                user2Nickname.text = findViewById(R.string.waiting)
+            }
+
+            @SuppressLint("ResourceType")
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                user2Nickname.text = findViewById(R.string.waiting)
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+
+        database.child("stones").addChildEventListener(object:ChildEventListener{
            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                var coX : String = snapshot.child("coX").getValue().toString()
                var coXInt = coX.toInt()
@@ -378,39 +411,52 @@ class TwoplayerGameboard : AppCompatActivity() {
     /* Initialize User Name
     *  이 코드에서 유저 이름 사용할 수 있도록 초기화 시키는 부분 */
     fun getUserName(){
+        var tempCnt = 0
         database.addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 println("##### 0번들어옴")
                 for(i in snapshot.children){
-                    if(i.key.equals("player1Id") && i.value.toString().isNotEmpty() && !nameFinished){ // player1Id가 존재한다면
+                    tempCnt++
+                    println("##### tempCnt : $tempCnt")
+                    println("##### $nameFinished ${i.key.equals("player1Id")} ${i.value.toString().isNotEmpty()} ")
+                    if(i.key.equals("player1Id") && i.value.toString().isNotEmpty() && !nameFinished && !isPlayer1Name){ // player1Id가 존재한다면
                         nameFinished = true
                         isPlayer1Name = true
                         println("##### 1번들어옴")
                         user1Nickname.text = myNickName
                         user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
                         enemyName = i.value.toString()
+                        serverUser2Name = true // 내가 서버에서 user2에 저장되어있음을 확인
                         database.child("player2Id").setValue(myNickName) // 나의 이름을 player2에 저장합니다.
                         break
                     }
-                    else if(i.key.equals("player2Id") && i.value.toString().isNotEmpty() && !nameFinished){ // player2Id에 이미 누가 있을 경우
+                    else if(i.key.equals("player2Id") && i.value.toString().isNotEmpty() && !nameFinished && !isPlayer2Name){ // player2Id에 이미 누가 있을 경우
                         nameFinished = true
                         isPlayer2Name = true
                         println("##### 2번들어옴")
                         user1Nickname.text = myNickName
                         user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
                         enemyName = i.value.toString()
+                        serverUser1Name = true // 내가 서버에서 user1에 저장되어있음을 확인
                         database.child("player1Id").setValue(myNickName) // 나의 이름을 player1에 저장합니다.
                         break
                     }
+                } // 이 for문의 조건문에 맞는 항목이 없다면 방에 사람이 없다는 뜻이므로 아래에서 user1과 user1 tv위치에 값들을 설정해줍니다.
+
+                if(!isPlayer1Name && !isPlayer2Name && (tempCnt>=3)) {
+                    isPlayer1Name = true
+                    user1Nickname.text = myNickName
+                    database.child("player1Id").setValue(myNickName)
                 }
+
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                Log.e("Firebase Error", "$error")
             }
 
         })
-
+        /*
         if(!isPlayer1Name && !isPlayer2Name && !nameFinished){ // 만약 빈 방일 경우에, player1에 myNickname 설정
             println("##### $isPlayer1Name $isPlayer2Name $nameFinished")
             nameFinished = true
@@ -419,7 +465,7 @@ class TwoplayerGameboard : AppCompatActivity() {
             user2Nickname.text = "Waiting..."
             database.child("player1Id").setValue(myNickName) // 나의 이름을 player1에 저장합니다.
         }
-
+        */
         /*if(intent.hasExtra("player1NickName")) player1Name = intent.getStringExtra("player1NickName").toString() // MainActivity에서 설정한 이름을 intent로 불러와서 player1Name에 저장한다.
         database.addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -687,6 +733,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     var backKeyPressedTime : Long = 0 // 뒤로가기 버튼 클릭 시간 확인을 위한 변수
     //뒤로가기 버튼 클릭 시
+    @SuppressLint("ResourceType")
     override fun onBackPressed(){
         if(System.currentTimeMillis() > backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 지났다면연(연속적으로 클릭한 것이 아닐 때)
             backKeyPressedTime = System.currentTimeMillis()
@@ -695,8 +742,17 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
 
         if(System.currentTimeMillis() <= backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
-            //initBoards()
-            //turnNum = 1
+            if(serverUser1Name){ // 서버의 player1Id에 내 닉네임이 저장되어 있다면
+                var updateUserName = mutableMapOf<String, Any>()
+                updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
+                database.updateChildren(updateUserName)//Firebase에 업데이트
+            }else if(serverUser2Name){
+                var updateUserName = mutableMapOf<String, Any>()
+                updateUserName["player2Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
+                database.updateChildren(updateUserName)//Firebase에 업데이트
+            }
+
+
             database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
             Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
             finish()
