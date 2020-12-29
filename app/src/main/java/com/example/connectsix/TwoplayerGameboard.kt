@@ -15,8 +15,9 @@ import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 class TwoplayerGameboard : AppCompatActivity() {
 
     var clickCnt = 64 // 초기 확대 값(default 값)은 53
-
-    var database = FirebaseDatabase.getInstance().reference.child("roomId").child("tempRoomId")
+    //var roomKey : String = intent.getStringExtra("roomKey").toString()
+    //var database = FirebaseDatabase.getInstance().reference.child("roomId").child("tempRoomId")
+    //var database = FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
 
     var player1Name : String = ""
     var player2Name : String = ""
@@ -45,17 +46,24 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     var clickStoneChanged : Boolean = false
 
+    var roomKey = ""
+
+    var playerTurn = 0 // 1이면 player1차례이고, 2면 player2차례입니다.
+
     @SuppressLint("ShowToast", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.twoplayer_gameboard)
 
         if(intent.hasExtra("player1NickName")) myNickName = intent.getStringExtra("player1NickName").toString() // MainActivity에서 설정한 이름을 intent로 불러와서 player1Name에 저장한다.
+        if(intent.hasExtra("roomKey")) roomKey = intent.getStringExtra("roomKey").toString() // 유저가 접속하려는 방의 키를 불러와서 roomKey변수에 저장합니다.
 
-        getUserName() // 이름 설정을 합니다.
+        var database : DatabaseReference = FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
+
+        print(roomKey)
+
+        getUserName(database) // 이름 설정을 합니다.
         initBoards()
-
-
 
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
         * default 값은 64*/
@@ -330,6 +338,25 @@ class TwoplayerGameboard : AppCompatActivity() {
             }
         }
 
+        //TODO 이 부분과 아래 disableClick을 처리해야 함 201230
+        when(turnNum%4){
+            1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
+                playerTurn = 1
+                disableClick(playerTurn)
+            }
+            2,3 ->{ // 2,3이면 player 2 차례다
+                playerTurn = 2
+                disableClick(playerTurn)
+            }
+        }
+
+    }
+
+    //TODO - 201230
+    fun disableClick(pTurn : Int){
+        if(player2Name == myNickName && pTurn == 1){
+
+        }
     }
 
     //초록색으로 두어졌던 돌들을 원래 초록색을 빼고 일반적인 돌로 바꿔줍니다.
@@ -712,7 +739,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     /* Initialize User Name
     *  이 코드에서 유저 이름 사용할 수 있도록 초기화 시키는 부분 */
-    fun getUserName(){
+    fun getUserName(database : DatabaseReference){
         var tempCnt = 0
         database.addValueEventListener(object : ValueEventListener{
             @SuppressLint("ResourceType", "SetTextI18n")
@@ -721,14 +748,15 @@ class TwoplayerGameboard : AppCompatActivity() {
                     tempCnt++
                     //println("##### tempCnt : $tempCnt")
                     //println("##### $nameFinished ${i.key.equals("player1Id")} ${i.value.toString().isNotEmpty()} ")
-                    if(i.key.equals("player1Id") && i.value.toString().isNotEmpty() && !nameFinished && !isPlayer1Name){ // player1Id가 존재한다면
+                    if(i.key.equals("player1Id") && i.value.toString().isNotEmpty() && !nameFinished && !isPlayer1Name && (i.value.toString()!=myNickName)){ // player1Id가 존재한다면
                         player1Name = enemyName
-                        player2Name = myNickName
+                        player2Name = myNickName // 서버에서는 player2에 내 이름이 저장됩니다.
                         nameFinished = true
                         isPlayer1Name = true
                         //println("##### 1번들어옴")
                         user1Nickname.text = myNickName
                         user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
+                        //TODO 이 윗줄이 이상함
                         enemyName = i.value.toString()
                         serverUser2Name = true // 내가 서버에서 user2에 저장되어있음을 확인
                         database.child("player2Id").setValue(myNickName) // 나의 이름을 player2에 저장합니다.
@@ -1077,6 +1105,8 @@ class TwoplayerGameboard : AppCompatActivity() {
     //뒤로가기 버튼 클릭 시
     @SuppressLint("ResourceType")
     override fun onBackPressed(){
+        var database = FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
+
         if(System.currentTimeMillis() > backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 지났다면연(연속적으로 클릭한 것이 아닐 때)
             backKeyPressedTime = System.currentTimeMillis()
             Toast.makeText(this, "주의 : 한번 더 누르시면 게임이 나가집니다!", Toast.LENGTH_SHORT).show()
@@ -1084,6 +1114,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
 
         if(System.currentTimeMillis() <= backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
+
             if(serverUser1Name){ // 서버의 player1Id에 내 닉네임이 저장되어 있다면
                 var updateUserName = mutableMapOf<String, Any>()
                 updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
@@ -1094,8 +1125,10 @@ class TwoplayerGameboard : AppCompatActivity() {
                 database.updateChildren(updateUserName)//Firebase에 업데이트
             }
 
-            database.child("turnNum").setValue(1.toString()) // 이부분도 마찬가지로 beta때만 있으면 될듯, 어차피 방이 없어지면 다 삭제 되니..
-            database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
+            //database.child("turnNum").setValue(1.toString()) // 이부분도 마찬가지로 beta때만 있으면 될듯, 어차피 방이 없어지면 다 삭제 되니..
+            //database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
+
+            database.removeValue() // 마지막으로 데이터베이스 항목 자체를 삭제합니다.
             Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
             finish()
         }

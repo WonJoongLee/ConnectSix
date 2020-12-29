@@ -9,4 +9,9 @@
     <string name="create_account">Create Account</string>
     <string name="nickname">Nickname</string>
     <string name="waiting">Waiting…</string>
+    <string name="random_match">Random Match</string>
+    <string name="join_game">Join Game</string>
+    <string name="create_game">Create Game</string>
+    <string name="room_num">Room No.(ex.0000)</string>
+
 </resources>
