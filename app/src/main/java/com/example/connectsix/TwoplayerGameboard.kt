@@ -101,7 +101,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         database.child("player1Id").addChildEventListener(object:ChildEventListener{
             @SuppressLint("ResourceType")
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                println("@@@ something changed : ${snapshot.value.toString().length}")
+                //println("@@@ something changed : ${snapshot.value.toString().length}")
                 if(snapshot.value.toString().isNotEmpty()){ // User가 들어왔을 경우
                    user1Nickname.text = snapshot.value.toString()
                 }else if(snapshot.value.toString().isEmpty()){ // User가 나갔을 경우
@@ -122,11 +122,11 @@ class TwoplayerGameboard : AppCompatActivity() {
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
         })
-        //TODO player1Id와 player2Id가 서버에서 삭제되었을 때(즉 상대방이 나갔을 때) 상대방 닉네임 뜨는 부분을 Waiting...으로 처리해야 함
+
         database.child("player2Id").addChildEventListener(object:ChildEventListener{
             @SuppressLint("ResourceType")
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                println("@@@ something changed : ${snapshot.value.toString().length}")
+                //println("@@@ something changed : ${snapshot.value.toString().length}")
                 if(snapshot.value.toString().isNotEmpty()){ // User가 들어왔을 경우
                     user2Nickname.text = snapshot.value.toString()
                 }else if(snapshot.value.toString().isEmpty()){ // User가 나갔을 경우
@@ -169,6 +169,8 @@ class TwoplayerGameboard : AppCompatActivity() {
                clickStoneChanged = false
                turnDataList.add(Turn("", "", coXInt, coYInt))
 
+               //println(turnDataList)
+
                when(turnNum%4){
                    1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
                        setStoneDependOnSize(imageButton, "black", coXInt, coYInt)
@@ -181,12 +183,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
                if(turnNum>=3){
                    //var stoneStr = "stone".plus(i.toString())
-                   println("####DBDB#### ${turnDataList[turnNum-3].coX}, ${turnDataList[turnNum-3].coY}")
-                   var z = 0
-                   for(i in turnDataList){
-                        //println("$i : ${turnDataList[z++].coX}, ${turnDataList[z++].coY}")
-                       println("${z++} : $i")
-                   }
+                   //println("####DBDB#### ${turnDataList[turnNum-3].coX}, ${turnDataList[turnNum-3].coY}")
                    val coX : Int = turnDataList[turnNum-3].coX
                    val coY : Int = turnDataList[turnNum-3].coY
                    var boardFinalStone = "board".plus(if(coX<10) "0".plus(coX) else coX.toString()).plus(if(coY<10) "0".plus(coY) else coY.toString())
@@ -214,10 +211,8 @@ class TwoplayerGameboard : AppCompatActivity() {
 
                database.child("turnNum").setValue(turnNum.toString())
 
+               controlClickable()
                judgeVictory()
-
-
-               //printBoard()
            }
 
            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -241,6 +236,8 @@ class TwoplayerGameboard : AppCompatActivity() {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 var tempStr = snapshot.getValue().toString()
                 turnNum = tempStr.toInt()
+
+                controlClickable()
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -274,7 +271,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
                 imageButton.setOnClickListener {
-                    println("@@@@setonclicklist $turnNum@@@@")
+                    //println("@@@@setonclicklist $turnNum@@@@")
                     var stoneStrUpload : String = ""
                     var stoneData : Turn = Turn("ERROR", "ERROR", -1, -1)
 
@@ -300,45 +297,16 @@ class TwoplayerGameboard : AppCompatActivity() {
                     }
                     database.child("stones").push().setValue(stoneData) // stoneData Db에 업로드합니다.
 
-                    //turnDataList.add(stoneData) // 최근 돌의 색을 변화주기 위해서 지금까지 입력했던 데이터를 turnDataList에 저장합니다.
-                    /*
-                    if(turnNum>=3){
-                        //var stoneStr = "stone".plus(i.toString())
-                        println("####NOTDB##### ${turnDataList[turnNum-3].coX}, ${turnDataList[turnNum-3].coY}")
-                        val coX : Int = turnDataList[turnNum-3].coX
-                        val coY : Int = turnDataList[turnNum-3].coY
-                        var boardFinalStone = "board".plus(if(coX<10) zero.plus(coX) else coX.toString()).plus(if(coY<10) zero.plus(coY) else coY.toString())
-                        //boardFinalStone에는 원래 돌로 바꿔야할 위치의 좌표값이 들어있습니다.
-                        var targetStone : Int = resources.getIdentifier(boardFinalStone, "id", packageName)
-                        //targetStone에는 R.id.board0000 꼴로 바꿔야할 id가 들어있습니다.
-
-                        var targetImageButton : ImageButton = findViewById(targetStone)
-
-                        //println("######### ${turnDataList[turnNum-3].coX}, ${turnDataList[turnNum-3].coY}")
-
-                        when(turnNum%4){
-                            3,2 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
-                                checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
-                                changetoOriginalStone(targetImageButton, "black", coX, coY)//바로 전 돌의 색을 초록색 돌로 바꿔준다.
-                            }
-                            1,0 ->{ // 2,3이면 player 2 차례다
-                                checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
-                                changetoOriginalStone(targetImageButton, "white", coX, coY)//바로 전 돌의 색을 초록색 돌로 바꿔준다.
-                            }
-                        }
-                    }
-
-                     */
-
-                    println("${turnNum}번째 돌 착수")
+                    //println("${turnNum}번째 돌 착수")
                     stoneCheckArray[i][j] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
                     imageButton.isClickable = false // 한 번 돌이 착수된 곳은 다시 클릭하지 못하도록 설정
 
                 }
             }
         }
+    }
 
-        //TODO 이 부분과 아래 disableClick을 처리해야 함 201230
+    fun controlClickable(){
         when(turnNum%4){
             1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
                 playerTurn = 1
@@ -349,19 +317,54 @@ class TwoplayerGameboard : AppCompatActivity() {
                 disableClick(playerTurn)
             }
         }
-
     }
 
-    //TODO - 201230
-    fun disableClick(pTurn : Int){
-        if(player2Name == myNickName && pTurn == 1){
 
+    fun disableClick(pTurn : Int){
+        //println("player1Name : $player1Name // myNickName : $myNickName // pTurn : $pTurn")
+        //println("player2Name : $player2Name // myNickName : $myNickName // pTurn : $pTurn")
+        if((player1Name == myNickName && pTurn == 2 )|| (player2Name == myNickName && pTurn == 1 )){
+        // 서버 player1Id가 내 닉네임이고, 내 차례가 아니라면(pTurn == 2) 또는 서버 player2Id가 내 닉네임이고, 내 차례가 아니라면(pTurn==1)
+            var boardStr : String
+            var boardIStr : String // board00꼴까지 만들고 board00에 저장합니다.
+            for(i in 0..18){
+                boardStr = "board"
+                boardStr = boardStr.plus(if(i<10) "0".plus(i.toString()) else i.toString()) // board00까지 만들고 boardStr에 저장합니다.
+                for(j in 0..18){
+                    boardIStr = boardStr
+                    boardIStr = boardIStr.plus(if(j<10) "0".plus(j.toString()) else j.toString()) // board0000까지 만들고 boardIStr에 저장합니다.
+                    val imageButton : ImageButton = findViewById(resources.getIdentifier(boardIStr, "id", packageName))
+                    imageButton.isClickable = false
+                }
+            }
+        }else{ // 위 상황이 아니라면 imageButton을 click 가능하게 합니다.
+            var boardStr : String
+            var boardIStr : String
+            for(i in 0..18){
+                boardStr = "board"
+                boardStr = boardStr.plus(if(i<10) "0".plus(i.toString()) else i.toString())
+                for(j in 0..18){
+                    boardIStr = boardStr
+                    boardIStr = boardIStr.plus(if(j<10) "0".plus(j.toString()) else j.toString())
+                    val imageButton : ImageButton = findViewById(resources.getIdentifier(boardIStr, "id", packageName))
+                    for(k in turnDataList){ // turnDatalist에 있는 x좌표 y좌표는 계속 clickable이 false여야 한다. 그러므로 이 for문에서 걸러줍니다.
+                        if(k.coX == i && k.coY == j){ // 지금 현재 가공하는 i,j가 turnDataList에 있는 x좌표, y좌표와 같다면
+                            imageButton.isClickable = false // clickable을 false로 바꾸고 for문을 탈출한다. 더 이상 clickable이 true로 바뀌지 않도록 탈출해야 합니다.
+                            break
+                        }else{
+                            imageButton.isClickable = true
+                        }
+                    }
+                }
+            }
         }
     }
 
+
+
     //초록색으로 두어졌던 돌들을 원래 초록색을 빼고 일반적인 돌로 바꿔줍니다.
     private fun changetoOriginalStone(imageButton: ImageButton, color:String,  i:Int, j : Int){
-        println("%%% ${imageButton}, ${color}, ${i}, ${j}, ${clickCnt}")
+        //println("%%% ${imageButton}, ${color}, ${i}, ${j}, $clickCnt")
         when(clickCnt){
             16->{ // size가 16이면
                 if(color == "white") { // 흰색 둘 차례면
@@ -1006,7 +1009,7 @@ class TwoplayerGameboard : AppCompatActivity() {
             for(j in 0..18){
                 print("${stoneColorArray[i][j]}".padStart(8))
             }
-            println()
+            //println()
         }
     }
 
@@ -1017,7 +1020,7 @@ class TwoplayerGameboard : AppCompatActivity() {
             for(j in 0..18){
                 print("${checkStoneArray[i][j]}".padStart(8))
             }
-            println()
+            //println()
         }
     }
 

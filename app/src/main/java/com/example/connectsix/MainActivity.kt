@@ -16,9 +16,16 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-//TODO 다른 사람 차례일 때 바둑판(ImageButton) clickable 비활성화하는 코드 - 201230에 할 것
 
-// Done 닉네임 중복체크 기능
+//TODO 게임 끝나면 판정화면 만들고 바둑판 초기화시키기
+//TODO turnNum으로 지금 몇 번 째 돌인지 알려줄 수 있도록 layout에 추가하고 turnNum설정하기
+//TODO 닉네임 너무 길면 안들어가서 닉네임 제한 두기
+//TODO Button크기가 작아 잘못 둘 수도 있으니 확인 마크 추가하기
+//TODO 바둑판 나오는 곳에 몇 번 방인지 알 수 있도록 설정
+//TODO 바둑판에 돌 둘 때 소리 effect 넣기
+
+// DONE 다른 사람 차례일 때 바둑판(ImageButton) clickable 비활성화하는 코드 - 201230에 할 것
+// DONE 닉네임 중복체크 기능
 // DONE 둘 다 방 나가면 서버에서도 삭제하는 코드
 
 class MainActivity : AppCompatActivity() {
