@@ -1,23 +1,25 @@
 package com.example.connectsix
 
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
+import android.graphics.Color
+import android.media.AudioManager
+import android.media.SoundPool
 import android.os.Bundle
-import android.os.Handler
-import android.os.Message
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import com.google.firebase.database.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 
 class TwoplayerGameboard : AppCompatActivity() {
 
     var clickCnt = 64 // 초기 확대 값(default 값)은 53
-    //var roomKey : String = intent.getStringExtra("roomKey").toString()
-    //var database = FirebaseDatabase.getInstance().reference.child("roomId").child("tempRoomId")
-    //var database = FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
 
     var player1Name : String = ""
     var player2Name : String = ""
@@ -41,26 +43,41 @@ class TwoplayerGameboard : AppCompatActivity() {
     var stoneCheckArray: Array<BooleanArray> = Array<BooleanArray>(19){ BooleanArray(19) } // 해당 위치에 돌이 착수되었는지 확인하는 array
     var stoneColorArray: Array<IntArray> = Array<IntArray>(19){ IntArray(19) } // 해당 위치에 무슨 색의 돌이 착수되었는지 확인하는 array 0 : 착수 안됨, 1 : 검은색, 2: 흰색
     var checkStoneArray: Array<IntArray> = Array<IntArray>(19){ IntArray(19) }
+    var checkDiamondStone: Array<IntArray> = Array<IntArray>(19){ IntArray(19) }
 
     var winnerStr : String = ""
 
     var clickStoneChanged : Boolean = false
 
     var roomKey = ""
+    var roomNum = ""
 
     var playerTurn = 0 // 1이면 player1차례이고, 2면 player2차례입니다.
+
+    var stoneClickCnt = 0
+
+    var confirmX = -1
+    var confirmY = -1
+
+
 
     @SuppressLint("ShowToast", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.twoplayer_gameboard)
 
+        var soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
+        var soundID = soundPool.load(this, R.raw.sound_stone, 1)
+
         if(intent.hasExtra("player1NickName")) myNickName = intent.getStringExtra("player1NickName").toString() // MainActivity에서 설정한 이름을 intent로 불러와서 player1Name에 저장한다.
         if(intent.hasExtra("roomKey")) roomKey = intent.getStringExtra("roomKey").toString() // 유저가 접속하려는 방의 키를 불러와서 roomKey변수에 저장합니다.
+        if(intent.hasExtra("roomNum")) roomNum = intent.getStringExtra("roomNum").toString()
+
+        currentRoomNumber.text = roomNum
 
         var database : DatabaseReference = FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
 
-        print(roomKey)
+        println(roomKey)
 
         getUserName(database) // 이름 설정을 합니다.
         initBoards()
@@ -68,7 +85,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
         * default 값은 64*/
         zoomOutButton.setOnClickListener { //축소
-            println("@@@축소clickec!!")
+            println("@@@ $clickCnt!!")
             when(clickCnt){
                 64 -> {
                     zoomBoard32()
@@ -155,6 +172,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
         //데이터의 변화가 있을 때, 즉 상대방이 돌을 두면 DB 변화를 감지해서 내 화면에 변경된 점을 뿌려주는 부분
         database.child("stones").addChildEventListener(object:ChildEventListener{
+           @SuppressLint("ResourceAsColor")
            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                var coX : String = snapshot.child("coX").getValue().toString()
                var coXInt = coX.toInt()
@@ -207,12 +225,29 @@ class TwoplayerGameboard : AppCompatActivity() {
                    }
                }
 
+               when(turnNum%4){
+                   1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
+                       turnNumTextView.text = turnNum.toString()
+                       turnNumTextView.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
+                       turnNumTextView.setBackgroundResource(R.drawable.turn_number_black)
+                   }
+                   2,3 ->{ // 2,3이면 player 2 차례다
+                       turnNumTextView.text = turnNum.toString()
+                       turnNumTextView.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
+                       turnNumTextView.setBackgroundResource(R.drawable.turn_number_white)
+                   }
+               }
+
+
                turnNum++ // 한 턴이 진행되었음을 의미. 중요한 부분
+
+
+
 
                database.child("turnNum").setValue(turnNum.toString())
 
                controlClickable()
-               judgeVictory()
+               judgeVictory(database)
            }
 
            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -271,37 +306,115 @@ class TwoplayerGameboard : AppCompatActivity() {
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
                 imageButton.setOnClickListener {
-                    //println("@@@@setonclicklist $turnNum@@@@")
-                    var stoneStrUpload : String = ""
-                    var stoneData : Turn = Turn("ERROR", "ERROR", -1, -1)
 
-                    clickStoneChanged = false
-                    stoneStrUpload = "stone".plus((turnNum).toString()) // "stone0" 꼴로 stoneStr에 저장이 된다.
-                                                                     // 그 후 turnNum에 1을 더해 turn이 한 번 돌아갔음을 의미한다.
+                    soundPool.play(soundID,1f,1f,0,0,1f);	//작성
 
-                    if(turnNum == 0){//만약 돌을 처음 두는 것이라면 앞으로 둘 돌들을 저장한 stones를 Firebase에 추가한다.
-                        database.push().setValue("stones") // 처음 돌을 두는 과정이라면 push한다
-                    }
-                    when(turnNum%4){
-                        1,0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
-                            stoneData = Turn(player1Name, stoneStrUpload, i, j)
-                            checkStoneArray[i][j] = 1 // 지금 체크된 돌임을 명시
-                            setStoneDependOnSize(imageButton, "black", i, j)
+                    if(stoneClickCnt == 0){ // 처음 클릭한 것이면 확인하기 위해 클릭을 한 번 더하도록 유도합니다.
+                                            // 즉 해당 위치를 체크표시합니다.
+                        setCheckStone(imageButton, i, j)
+                        stoneClickCnt = 1
+                        checkDiamondStone[i][j] = 1
+                        println("#### checkdiamoned set zero000")
+
+                        confirmX = i // 사용자가 다시 이 위치를 클릭하는지 확인하기 위해 confirmX와 confirmY변수에 사용자가 클릭한 i,j를 저장합니다.
+                        confirmY = j
+                    }else if(stoneClickCnt == 1){ // 두 번째로 클릭한 것이면 해당 위치에 돌을 둡니다.
+                        //println("@@@@setonclicklist $turnNum@@@@")
+                        if(i==confirmX && j==confirmY) { // 두 번째로 돌을 둔 곳이 같은 위치라면 해당 위치에 돌을 둡니다.
+                            var stoneStrUpload: String = ""
+                            var stoneData: Turn = Turn("ERROR", "ERROR", -1, -1)
+
+                            clickStoneChanged = false
+                            stoneStrUpload =
+                                "stone".plus((turnNum).toString()) // "stone0" 꼴로 stoneStr에 저장이 된다.
+                            // 그 후 turnNum에 1을 더해 turn이 한 번 돌아갔음을 의미한다.
+
+                            if (turnNum == 0) {//만약 돌을 처음 두는 것이라면 앞으로 둘 돌들을 저장한 stones를 Firebase에 추가한다.
+                                database.push().setValue("stones") // 처음 돌을 두는 과정이라면 push한다
+                            }
+                            when (turnNum % 4) {
+                                1, 0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
+                                    stoneData = Turn(player1Name, stoneStrUpload, i, j)
+                                    checkStoneArray[i][j] = 1 // 지금 체크된 돌임을 명시
+                                    setStoneDependOnSize(imageButton, "black", i, j)
+                                }
+                                2, 3 -> { // 2,3이면 player 2 차례다
+                                    stoneData = Turn(player2Name, stoneStrUpload, i, j)
+                                    stoneData = Turn(player2Name, stoneStrUpload, i, j)
+                                    checkStoneArray[i][j] = 1 // 지금 체크된 돌임을 명시
+                                    setStoneDependOnSize(imageButton, "white", i, j)
+                                }
+                            }
+                            database.child("stones").push()
+                                .setValue(stoneData) // stoneData Db에 업로드합니다.
+
+                            //println("${turnNum}번째 돌 착수")
+                            stoneCheckArray[i][j] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
+                            imageButton.isClickable = false // 한 번 돌이 착수된 곳은 다시 클릭하지 못하도록 설정
+
+                            stoneClickCnt = 0
+                            checkDiamondStone[i][j] = 0
+                            println("#### checkdiamoned set zero000")
+                        }else{ // 두 번째 클릭한 위치가 다른 위치라면(다이아몬드를 옮겨야 함)
+                            println("@@@@ confirm : $confirmX $confirmY")
+                            checkDiamondStone[confirmX][confirmY] = 0 // 해당 위치에서 다이아몬드가 사라졌기 때문에 다시 0으로 원상복귀합니다.
+
+                            changeStoneDependSize(confirmX, confirmY)
+
+                            setCheckStone(imageButton, i, j)
+                            //stoneClickCnt = 1
+                            checkDiamondStone[i][j] = 1
+                            confirmX = i
+                            confirmY = j
+                            //println("#### checkdiamoned set zero000")
                         }
-                        2,3 ->{ // 2,3이면 player 2 차례다
-                            stoneData = Turn(player2Name, stoneStrUpload, i, j)
-                            stoneData = Turn(player2Name, stoneStrUpload, i, j)
-                            checkStoneArray[i][j] = 1 // 지금 체크된 돌임을 명시
-                            setStoneDependOnSize(imageButton, "white", i, j)
-                        }
                     }
-                    database.child("stones").push().setValue(stoneData) // stoneData Db에 업로드합니다.
-
-                    //println("${turnNum}번째 돌 착수")
-                    stoneCheckArray[i][j] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
-                    imageButton.isClickable = false // 한 번 돌이 착수된 곳은 다시 클릭하지 못하도록 설정
-
                 }
+            }
+        }
+    }
+
+    fun changeStoneDependSize(i : Int, j : Int){
+        val boardStr = "board".plus(if(i <10) "0".plus(i.toString()) else i.toString()).plus(if(j <10) "0".plus(j.toString()) else j.toString())
+        val target : Int = resources.getIdentifier(boardStr, "id", packageName)
+        val imageButton : ImageButton = findViewById(target)
+
+        when(clickCnt){
+            16 -> {
+                if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point16)
+                else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left16) // 왼쪽 부분일 때
+                else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner16) // 왼쪽 위 코너일 때, (0,0)일 때
+                else if (i == 18 && j == 0) imageButton.setImageResource(R.drawable.left_bottom_corner16) // 왼쪽 아래 코너일 때, (18,0)일 때
+                else if (i!=0 && j==18 && i != 18) imageButton.setImageResource(R.drawable.right16) // 오른쪽 일 때
+                else if (i==0 && j==18) imageButton.setImageResource(R.drawable.right_top_corner16) // 오른쪽 위 코너일 때, (0,18)일 때
+                else if (i==18 && j==18) imageButton.setImageResource(R.drawable.right_bottom_corner16) // 오른쪽 아래 코너일 때, (18,18)일 때
+                else if (i==18 && j!=0 && j!=19) imageButton.setImageResource(R.drawable.bottom16) // 아래일 때
+                else if (i==0 && j!=0 && j!=19) imageButton.setImageResource(R.drawable.top16) // 위일 때
+                else imageButton.setImageResource(R.drawable.standard16) // imageButton의 image를 32 size로 축소
+            }
+            32 -> {
+                if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point32)
+                else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left32) // 왼쪽 부분일 때
+                else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner32) // 왼쪽 위 코너일 때, (0,0)일 때
+                else if (i == 18 && j == 0) imageButton.setImageResource(R.drawable.left_bottom_corner32) // 왼쪽 아래 코너일 때, (18,0)일 때
+                else if (i!=0 && j==18 && i != 18) imageButton.setImageResource(R.drawable.right32) // 오른쪽 일 때
+                else if (i==0 && j==18) imageButton.setImageResource(R.drawable.right_top_corner32) // 오른쪽 위 코너일 때, (0,18)일 때
+                else if (i==18 && j==18) imageButton.setImageResource(R.drawable.right_bottom_corner32) // 오른쪽 아래 코너일 때, (18,18)일 때
+                else if (i==18 && j!=0 && j!=19) imageButton.setImageResource(R.drawable.bottom32) // 아래일 때
+                else if (i==0 && j!=0 && j!=19) imageButton.setImageResource(R.drawable.top32) // 위일 때
+                else imageButton.setImageResource(R.drawable.standard32) // imageButton의 image를 32 size로 축소
+            }
+            64 -> {
+                if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point64)
+                else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left64) // 왼쪽 부분일 때
+                else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner64) // 왼쪽 위 코너일 때, (0,0)일 때
+                else if (i == 18 && j == 0) imageButton.setImageResource(R.drawable.left_bottom_corner64) // 왼쪽 아래 코너일 때, (18,0)일 때
+                else if (i!=0 && j==18 && i != 18) imageButton.setImageResource(R.drawable.right64) // 오른쪽 일 때
+                else if (i==0 && j==18) imageButton.setImageResource(R.drawable.right_top_corner64) // 오른쪽 위 코너일 때, (0,18)일 때
+                else if (i==18 && j==18) imageButton.setImageResource(R.drawable.right_bottom_corner64) // 오른쪽 아래 코너일 때, (18,18)일 때
+                else if (i==18 && j!=0 && j!=19) imageButton.setImageResource(R.drawable.bottom64) // 아래일 때
+                else if (i==0 && j!=0 && j!=19) imageButton.setImageResource(R.drawable.top64) // 위일 때
+                else imageButton.setImageResource(R.drawable.standard64) // imageButton의 image를 32 size로 축소
             }
         }
     }
@@ -545,6 +658,194 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
     }
 
+    private fun setCheckStoneDependSize(imageButton: ImageButton, i : Int, j : Int, size : Int){
+        when(size){
+            16->{ // size가 16이면
+                if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.left_top_corner_confirm16)
+                }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.right_top_corner_confirm16)
+                }
+                else if(i==0){ // 위일 때(0행)
+                    imageButton.setImageResource(R.drawable.top_confrim16)
+                }
+                else if(i==18 && j==0){//왼쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.left_bottom_corner_confirm16)
+                }
+                else if(i==18&&j==18){ // 오른쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.right_bottom_corner_confirm16)
+                }
+                else if(i==18){ // 아래일때(18행일 때)
+                    imageButton.setImageResource(R.drawable.bottom_confirm16)
+                }
+                else if(j==0){ // 왼쪽일 때(0열일때)
+                    imageButton.setImageResource(R.drawable.left_confirm16)
+                }
+                else if(j==18){ // 오른쪽일 때(18열일때)
+                    imageButton.setImageResource(R.drawable.right_confirm16)
+                }
+                else{ // 나머지일 때
+                    println("@@@ 그렸다")
+                    imageButton.setImageResource(R.drawable.standard_confirm16)
+                }
+            }
+            32->{
+                if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.left_top_corner_confirm32)
+                }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.right_top_corner_confirm32)
+                }
+                else if(i==0){ // 위일 때(0행)
+                    imageButton.setImageResource(R.drawable.top_confrim32)
+                }
+                else if(i==18 && j==0){//왼쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.left_bottom_corner_confirm32)
+                }
+                else if(i==18&&j==18){ // 오른쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.right_bottom_corner_confirm32)
+                }
+                else if(i==18){ // 아래일때(18행일 때)
+                    imageButton.setImageResource(R.drawable.bottom_confirm32)
+                }
+                else if(j==0){ // 왼쪽일 때(0열일때)
+                    imageButton.setImageResource(R.drawable.left_confirm32)
+                }
+                else if(j==18){ // 오른쪽일 때(18열일때)
+                    imageButton.setImageResource(R.drawable.right_confirm32)
+                }
+                else{ // 나머지일 때
+                    println("@@@ 그렸다")
+                    imageButton.setImageResource(R.drawable.standard_confirm32)
+                }
+            }
+            64->{
+                if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.left_top_corner_confirm64)
+                }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.right_top_corner_confirm64)
+                }
+                else if(i==0){ // 위일 때(0행)
+                    imageButton.setImageResource(R.drawable.top_confrim64)
+                }
+                else if(i==18 && j==0){//왼쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.left_bottom_corner_confirm64)
+                }
+                else if(i==18&&j==18){ // 오른쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.right_bottom_corner_confirm64)
+                }
+                else if(i==18){ // 아래일때(18행일 때)
+                    imageButton.setImageResource(R.drawable.bottom_confirm64)
+                }
+                else if(j==0){ // 왼쪽일 때(0열일때)
+                    imageButton.setImageResource(R.drawable.left_confirm64)
+                }
+                else if(j==18){ // 오른쪽일 때(18열일때)
+                    imageButton.setImageResource(R.drawable.right_confirm64)
+                }
+                else{ // 나머지일 때
+                    println("@@@ 그렸다")
+                    imageButton.setImageResource(R.drawable.standard_confirm64)
+                }
+            }
+        }
+    }
+
+
+
+    private fun setCheckStone(imageButton: ImageButton, i : Int, j : Int){
+        println("@@@@@ imageButton : $imageButton i : $i, j : $j")
+        println("@@@그리기 직전 cnt : $clickCnt")
+        when(clickCnt){
+            16->{ // size가 16이면
+                    if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.left_top_corner_confirm16)
+                    }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                        imageButton.setImageResource(R.drawable.right_top_corner_confirm16)
+                    }
+                    else if(i==0){ // 위일 때(0행)
+                        imageButton.setImageResource(R.drawable.top_confrim16)
+                    }
+                    else if(i==18 && j==0){//왼쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.left_bottom_corner_confirm16)
+                    }
+                    else if(i==18&&j==18){ // 오른쪽 하단일 때
+                        imageButton.setImageResource(R.drawable.right_bottom_corner_confirm16)
+                    }
+                    else if(i==18){ // 아래일때(18행일 때)
+                        imageButton.setImageResource(R.drawable.bottom_confirm16)
+                    }
+                    else if(j==0){ // 왼쪽일 때(0열일때)
+                        imageButton.setImageResource(R.drawable.left_confirm16)
+                    }
+                    else if(j==18){ // 오른쪽일 때(18열일때)
+                        imageButton.setImageResource(R.drawable.right_confirm16)
+                    }
+                    else{ // 나머지일 때
+                        println("@@@ 그렸다")
+                        imageButton.setImageResource(R.drawable.standard_confirm16)
+                    }
+                }
+            32->{
+                if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.left_top_corner_confirm32)
+                }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.right_top_corner_confirm32)
+                }
+                else if(i==0){ // 위일 때(0행)
+                    imageButton.setImageResource(R.drawable.top_confrim32)
+                }
+                else if(i==18 && j==0){//왼쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.left_bottom_corner_confirm32)
+                }
+                else if(i==18&&j==18){ // 오른쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.right_bottom_corner_confirm32)
+                }
+                else if(i==18){ // 아래일때(18행일 때)
+                    imageButton.setImageResource(R.drawable.bottom_confirm32)
+                }
+                else if(j==0){ // 왼쪽일 때(0열일때)
+                    imageButton.setImageResource(R.drawable.left_confirm32)
+                }
+                else if(j==18){ // 오른쪽일 때(18열일때)
+                    imageButton.setImageResource(R.drawable.right_confirm32)
+                }
+                else{ // 나머지일 때
+                    println("@@@ 그렸다")
+                    imageButton.setImageResource(R.drawable.standard_confirm32)
+                }
+            }
+            64->{
+                if(i==0 && j==0){ // 왼쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.left_top_corner_confirm64)
+                }else if(i==0 && j==18){ // 오른쪽 상단 코너일 때
+                    imageButton.setImageResource(R.drawable.right_top_corner_confirm64)
+                }
+                else if(i==0){ // 위일 때(0행)
+                    imageButton.setImageResource(R.drawable.top_confrim64)
+                }
+                else if(i==18 && j==0){//왼쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.left_bottom_corner_confirm64)
+                }
+                else if(i==18&&j==18){ // 오른쪽 하단일 때
+                    imageButton.setImageResource(R.drawable.right_bottom_corner_confirm64)
+                }
+                else if(i==18){ // 아래일때(18행일 때)
+                    imageButton.setImageResource(R.drawable.bottom_confirm64)
+                }
+                else if(j==0){ // 왼쪽일 때(0열일때)
+                    imageButton.setImageResource(R.drawable.left_confirm64)
+                }
+                else if(j==18){ // 오른쪽일 때(18열일때)
+                    imageButton.setImageResource(R.drawable.right_confirm64)
+                }
+                else{ // 나머지일 때
+                    println("@@@ 그렸다")
+                    imageButton.setImageResource(R.drawable.standard_confirm64)
+                }
+            }
+        }
+    }
+
     /*지금 화면에 보여지는 한 타일(바둑판 한 칸의 사이즈)의 크기(16,32,64)와 플레이어의 차례에 따라 색을 구분해
     * 바둑판에 돌을 두는 함수입니다.*/
     private fun setStoneDependOnSize(imageButton: ImageButton, color : String, i : Int, j : Int){
@@ -752,14 +1053,12 @@ class TwoplayerGameboard : AppCompatActivity() {
                     //println("##### tempCnt : $tempCnt")
                     //println("##### $nameFinished ${i.key.equals("player1Id")} ${i.value.toString().isNotEmpty()} ")
                     if(i.key.equals("player1Id") && i.value.toString().isNotEmpty() && !nameFinished && !isPlayer1Name && (i.value.toString()!=myNickName)){ // player1Id가 존재한다면
-                        player1Name = enemyName
+                        player1Name = i.value.toString()
                         player2Name = myNickName // 서버에서는 player2에 내 이름이 저장됩니다.
                         nameFinished = true
                         isPlayer1Name = true
-                        //println("##### 1번들어옴")
                         user1Nickname.text = myNickName
                         user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
-                        //TODO 이 윗줄이 이상함
                         enemyName = i.value.toString()
                         serverUser2Name = true // 내가 서버에서 user2에 저장되어있음을 확인
                         database.child("player2Id").setValue(myNickName) // 나의 이름을 player2에 저장합니다.
@@ -767,10 +1066,9 @@ class TwoplayerGameboard : AppCompatActivity() {
                     }
                     else if(i.key.equals("player2Id") && i.value.toString().isNotEmpty() && !nameFinished && !isPlayer2Name){ // player2Id에 이미 누가 있을 경우
                         player1Name = myNickName
-                        player2Name = enemyName
+                        player2Name = i.value.toString()
                         nameFinished = true
                         isPlayer2Name = true
-                        //println("##### 2번들어옴")
                         user1Nickname.text = myNickName
                         user2Nickname.text = i.value.toString() // 상대편이 존재하는 것이므로 user2의 nickname을 설정해줍니다.
                         enemyName = i.value.toString()
@@ -856,24 +1154,37 @@ class TwoplayerGameboard : AppCompatActivity() {
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
-                when(stoneColorArray[i][j]){// 해당 위치(i,j)에 돌이 착수가 되었다면
-                    1 -> { // TODO 여기서 네모체크 되어 있는 돌들 걸러줘서 그려야 할듯
-                        if(checkStoneArray[i][j] == 1){ // 만약 체크된 돌이면 체크표시를 해서 그린다
-                            imageButton.setImageResource(R.drawable.circle_black_check32)
-                        }else {
-                            imageButton.setImageResource(R.drawable.circle_black32)
+
+
+                if(checkDiamondStone[i][j]==1){
+                    println("&&& checkdiamondStone ($i, $j) : ${checkDiamondStone[i][j]}")
+                    // 해당 위치에 돌이 착수되지 않았고(위 if문 (stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2)을 만족하지 않고),
+                    // 빨간 다이아몬드가 체크 되었고(checkDiamondStone[i][j]==1)
+                    // 금방돌이 아니어서 체크된 돌이 아니라면 (checkStoneArray[i][j]!=1)
+                    setCheckStoneDependSize(imageButton, i, j, 32)
+                    continue
+                }else if(stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2) {// 해당 위치(i,j)에 돌이 착수가 되었다면
+                    when (stoneColorArray[i][j]) {
+                        1 -> { // 검은색 돌이라면
+                            if (checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
+                                imageButton.setImageResource(R.drawable.circle_black_check32)
+                            } else {
+                                imageButton.setImageResource(R.drawable.circle_black32)
+                            }
+                            continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
                         }
-                        continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
-                    }
-                    2 -> {
-                        if(checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
-                            imageButton.setImageResource(R.drawable.circle_white_check32)
-                        }else {
-                            imageButton.setImageResource(R.drawable.circle_white32)
+                        2 -> { // 흰색 돌이라면
+                            if (checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
+                                imageButton.setImageResource(R.drawable.circle_white_check32)
+                            } else {
+                                imageButton.setImageResource(R.drawable.circle_white32)
+                            }
+                            continue
                         }
-                        continue
                     }
                 }
+
+
                 if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point32)
                 else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left32) // 왼쪽 부분일 때
                 else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner32) // 왼쪽 위 코너일 때, (0,0)일 때
@@ -912,24 +1223,37 @@ class TwoplayerGameboard : AppCompatActivity() {
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
-                when(stoneColorArray[i][j]){// 해당 위치(i,j)에 돌이 착수가 되었다면
-                    1 -> {
-                        if(checkStoneArray[i][j] == 1){ // 만약 체크된 돌이면 체크표시를 해서 그린다
-                            imageButton.setImageResource(R.drawable.circle_black_check64)
-                        }else {
-                            imageButton.setImageResource(R.drawable.circle_black64)
+
+                if(checkDiamondStone[i][j]==1){
+                    println("&&& checkdiamondStone ($i, $j) : ${checkDiamondStone[i][j]}")
+                    // 해당 위치에 돌이 착수되지 않았고(위 if문 (stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2)을 만족하지 않고),
+                    // 빨간 다이아몬드가 체크 되었고(checkDiamondStone[i][j]==1)
+                    // 금방돌이 아니어서 체크된 돌이 아니라면 (checkStoneArray[i][j]!=1)
+                    setCheckStoneDependSize(imageButton, i, j, 64)
+                    continue
+                }else if(stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2) {// 해당 위치(i,j)에 돌이 착수가 되었다면
+                    when (stoneColorArray[i][j]) {// 해당 위치(i,j)에 돌이 착수가 되었다면
+                        1 -> {
+                            if (checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
+                                imageButton.setImageResource(R.drawable.circle_black_check64)
+                            } else {
+                                imageButton.setImageResource(R.drawable.circle_black64)
+                            }
+                            continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
                         }
-                        continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
-                    }
-                    2 -> {
-                        if(checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
-                            imageButton.setImageResource(R.drawable.circle_white_check64)
-                        }else {
-                            imageButton.setImageResource(R.drawable.circle_white64)
+                        2 -> {
+                            if (checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
+                                imageButton.setImageResource(R.drawable.circle_white_check64)
+                            } else {
+                                imageButton.setImageResource(R.drawable.circle_white64)
+                            }
+                            continue
                         }
-                        continue
                     }
                 }
+
+
+
                 if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point64)
                 else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left64) // 왼쪽 부분일 때
                 else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner64) // 왼쪽 위 코너일 때, (0,0)일 때
@@ -968,24 +1292,37 @@ class TwoplayerGameboard : AppCompatActivity() {
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 var target : Int = resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
-                when(stoneColorArray[i][j]){// 해당 위치(i,j)에 돌이 착수가 되었다면
-                    1 -> {
-                        if(checkStoneArray[i][j] == 1){ // 만약 체크된 돌이면 체크표시를 해서 그린다
-                            imageButton.setImageResource(R.drawable.circle_black_check16)
-                        }else {
-                            imageButton.setImageResource(R.drawable.circle_black16)
+
+
+
+                if(checkDiamondStone[i][j]==1){
+                    println("&&& checkdiamondStone ($i, $j) : ${checkDiamondStone[i][j]}")
+                    // 해당 위치에 돌이 착수되지 않았고(위 if문 (stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2)을 만족하지 않고),
+                    // 빨간 다이아몬드가 체크 되었고(checkDiamondStone[i][j]==1)
+                    // 금방돌이 아니어서 체크된 돌이 아니라면 (checkStoneArray[i][j]!=1)
+                    setCheckStoneDependSize(imageButton, i, j, 16)
+                    continue
+                }else if(stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2) {// 해당 위치(i,j)에 돌이 착수가 되었다면
+                    when (stoneColorArray[i][j]) {// 해당 위치(i,j)에 돌이 착수가 되었다면
+                        1 -> {
+                            if (checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
+                                imageButton.setImageResource(R.drawable.circle_black_check16)
+                            } else {
+                                imageButton.setImageResource(R.drawable.circle_black16)
+                            }
+                            continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
                         }
-                        continue // 돌에 대한 처리를 when에서 해주기 때문에 (i,j)의 돌에 대한 처리는 여기서 해줄 필요 없다.
-                    }
-                    2 -> {
-                        if(checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
-                            imageButton.setImageResource(R.drawable.circle_white_check16)
-                        }else {
-                            imageButton.setImageResource(R.drawable.circle_white16)
+                        2 -> {
+                            if (checkStoneArray[i][j] == 1) { // 만약 체크된 돌이면 체크표시를 해서 그린다
+                                imageButton.setImageResource(R.drawable.circle_white_check16)
+                            } else {
+                                imageButton.setImageResource(R.drawable.circle_white16)
+                            }
+                            continue
                         }
-                        continue
                     }
                 }
+
                 if ((i==3 && j == 3)||(i==3 && j == 9)||(i==3 && j == 15)||(i==9 && j == 3)||(i==9 && j == 9)||(i==9 && j == 15)||(i==15 && j == 3)||(i==15 && j == 9)||(i==15 && j == 15)) imageButton.setImageResource(R.drawable.point16)
                 else if(i!=0 && j==0 && i!=18) imageButton.setImageResource(R.drawable.left16) // 왼쪽 부분일 때
                 else if (i == 0 && j == 0) imageButton.setImageResource(R.drawable.left_top_corner16) // 왼쪽 위 코너일 때, (0,0)일 때
@@ -1005,9 +1342,9 @@ class TwoplayerGameboard : AppCompatActivity() {
         //println("@@@@PRINT BOARD@@@@")
         //Log.d("Print Board", "Print Board")
         for(i in 0..18){
-            print("$i : ".padStart(3))
+            //print("$i : ".padStart(3))
             for(j in 0..18){
-                print("${stoneColorArray[i][j]}".padStart(8))
+                //print("${stoneColorArray[i][j]}".padStart(8))
             }
             //println()
         }
@@ -1018,28 +1355,32 @@ class TwoplayerGameboard : AppCompatActivity() {
         for(i in 0..18){
             print("$i : ")
             for(j in 0..18){
-                print("${checkStoneArray[i][j]}".padStart(8))
+                //print("${checkStoneArray[i][j]}".padStart(8))
             }
             //println()
         }
     }
 
-    fun judgeVictory(){
+    fun judgeVictory(database: DatabaseReference){
         for(i in 0..13){ // 세로로 다 맞았을 때
             for(j in 0..18){
                 if(stoneColorArray[i][j] == 1 && stoneColorArray[i+1][j] == 1 && stoneColorArray[i+2][j] == 1 && stoneColorArray[i+3][j] == 1 && stoneColorArray[i+4][j] == 1 && stoneColorArray[i+5][j] ==  1){
                     winnerStr = player1Name
-                    Toast.makeText(this, "1$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "1$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards() // 게임 승리 판정이 나면 초기화
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
                 else if(stoneColorArray[i][j] == 2 && stoneColorArray[i+1][j] == 2 && stoneColorArray[i+2][j] == 2 && stoneColorArray[i+3][j] == 2 && stoneColorArray[i+4][j] == 2 && stoneColorArray[i+5][j] ==  2){
                     winnerStr = player2Name
-                    Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
             }
         }
@@ -1048,17 +1389,21 @@ class TwoplayerGameboard : AppCompatActivity() {
             for(i in 0..18){
                 if(stoneColorArray[i][j] == 1 && stoneColorArray[i][j+1] == 1 && stoneColorArray[i][j+2] == 1 && stoneColorArray[i][j+3] == 1 && stoneColorArray[i][j+4] == 1 && stoneColorArray[i][j+5] ==  1){
                     winnerStr = player1Name
-                    Toast.makeText(this, "3$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "3$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
                 else if(stoneColorArray[i][j] == 2 && stoneColorArray[i][j+1] == 2 && stoneColorArray[i][j+2] == 2 && stoneColorArray[i][j+3] == 2 && stoneColorArray[i][j+4] == 2 && stoneColorArray[i][j+5] ==  2){
                     winnerStr = player2Name
-                    Toast.makeText(this, "4$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "4$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
             }
         }
@@ -1068,17 +1413,21 @@ class TwoplayerGameboard : AppCompatActivity() {
             for(i in 0..13){
                 if(stoneColorArray[i][j] == 1 && stoneColorArray[i+1][j+1] == 1 && stoneColorArray[i+2][j+2] == 1 && stoneColorArray[i+3][j+3] == 1 && stoneColorArray[i+4][j+4] == 1 && stoneColorArray[i+5][j+5] ==  1){
                     winnerStr = player1Name
-                    Toast.makeText(this, "5$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "5$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
                 else if(stoneColorArray[i][j] == 2 && stoneColorArray[i+1][j+1] == 2 && stoneColorArray[i+2][j+2] == 2 && stoneColorArray[i+3][j+3] == 2 && stoneColorArray[i+4][j+4] == 2 && stoneColorArray[i+5][j+5] ==  2){
                     winnerStr = player2Name
-                    Toast.makeText(this, "6$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "6$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
             }
         }
@@ -1087,20 +1436,74 @@ class TwoplayerGameboard : AppCompatActivity() {
             for(i in 0..13){
                 if(stoneColorArray[19-i-1][j] == 1 && stoneColorArray[19-i-2][j+1] == 1 && stoneColorArray[19-i-3][j+2] == 1 && stoneColorArray[19-i-4][j+3] == 1 && stoneColorArray[19-i-5][j+4] == 1 && stoneColorArray[19-i-6][j+5] ==  1){
                     winnerStr = player1Name
-                    Toast.makeText(this, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
                 else if(stoneColorArray[19-i-1][j] == 2 && stoneColorArray[19-i-2][j+1] == 2 && stoneColorArray[19-i-3][j+2] == 2 && stoneColorArray[19-i-4][j+3] == 2 && stoneColorArray[19-i-5][j+4] == 2 && stoneColorArray[19-i-6][j+5] ==  2){
                     winnerStr = player2Name
-                    Toast.makeText(this, "8$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "8$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
+                    return
                 }
             }
         }
+    }
+
+    fun showDialog(database: DatabaseReference, winnerStr : String){
+        println("@@@@ showDialog들어왔습니다.")
+
+        val builder = AlertDialog.Builder(this)
+        val winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+        val loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+
+        if(myNickName == winnerStr){ // 만약 승리했다면,
+            builder.setView(winDialogView)
+                .setPositiveButton("RETRY"){ _, _ -> //재경기 누르면
+                    //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+                }
+                .setNegativeButton("EXIT"){_, _ -> // EXIT 누르면 MainActivity로 이동
+                    exitProgress(database)
+                }
+                .setCancelable(false)
+                .show()
+
+        }else if(myNickName != winnerStr){ // 만약 패배했다면,
+            builder.setView(loseDialogView)
+                .setPositiveButton("RETRY"){ _, _ -> //재경기 누르면
+
+                }
+                .setNegativeButton("EXIT"){_, _ -> // EXIT 누르면 MainActivity로 이동
+                    exitProgress(database)
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
+
+    fun exitProgress(database : DatabaseReference){
+        if(serverUser1Name){ // 서버의 player1Id에 내 닉네임이 저장되어 있다면
+            var updateUserName = mutableMapOf<String, Any>()
+            updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
+            database.updateChildren(updateUserName)//Firebase에 업데이트
+        }else if(serverUser2Name){
+            var updateUserName = mutableMapOf<String, Any>()
+            updateUserName["player2Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
+            database.updateChildren(updateUserName)//Firebase에 업데이트
+        }
+
+        //database.child("turnNum").setValue(1.toString()) // 이부분도 마찬가지로 beta때만 있으면 될듯, 어차피 방이 없어지면 다 삭제 되니..
+        //database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
+
+        database.removeValue() // 마지막으로 데이터베이스 항목 자체를 삭제합니다.
+        Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
 
@@ -1117,23 +1520,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
 
         if(System.currentTimeMillis() <= backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
-
-            if(serverUser1Name){ // 서버의 player1Id에 내 닉네임이 저장되어 있다면
-                var updateUserName = mutableMapOf<String, Any>()
-                updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
-                database.updateChildren(updateUserName)//Firebase에 업데이트
-            }else if(serverUser2Name){
-                var updateUserName = mutableMapOf<String, Any>()
-                updateUserName["player2Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
-                database.updateChildren(updateUserName)//Firebase에 업데이트
-            }
-
-            //database.child("turnNum").setValue(1.toString()) // 이부분도 마찬가지로 beta때만 있으면 될듯, 어차피 방이 없어지면 다 삭제 되니..
-            //database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
-
-            database.removeValue() // 마지막으로 데이터베이스 항목 자체를 삭제합니다.
-            Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
-            finish()
+            exitProgress(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
         }
     }
 
@@ -1152,6 +1539,11 @@ class TwoplayerGameboard : AppCompatActivity() {
         for(i in checkStoneArray.indices){
             for( j in checkStoneArray[i].indices){
                 checkStoneArray[i][j] = 0 // 0은 일반 돌임을 명시
+            }
+        }
+        for(i in checkDiamondStone.indices){
+            for( j in checkDiamondStone[i].indices){
+                checkDiamondStone[i][j] = 0 // 0은 다이아몬드가 없음을 의미
             }
         }
         printColorBoard()

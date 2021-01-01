@@ -1,18 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/user2Layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_height="44dp"
+        app:layout_constraintBottom_toTopOf="@id/twoPlayerBoard"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/twoPlayerBoard"
-        >
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!--부모 view보다 작게 하기-->
+        <TextView
+            android:id="@+id/turnNumTextView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/turn_number_black"
+            android:fontFamily="@font/stentiga"
+            android:gravity="center"
+            android:text="@string/numberOne"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/roomNoLinearLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/turnNumTextView"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/roomNumberTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="bottom"
+                android:text="@string/room_num_indicator"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/currentRoomNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/stentiga"
+                android:gravity="top"
+                android:text="@string/temporary_room_num"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
 
         <ImageView
             android:id="@+id/user2ProfilePicture"
@@ -20,10 +69,9 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:src="@drawable/abc_vector_test"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/user2Nickname"
@@ -41,13 +89,13 @@
             android:id="@+id/user2Record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
+            android:layout_margin="10dp"
             android:text="@string/user2_record"
-            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="12sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/user2Nickname"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/user2Nickname"
-            android:layout_margin="10dp"
-            app:layout_constraintBaseline_toBaselineOf="@id/user2Nickname"
+            app:layout_constraintTop_toTopOf="parent"
 
             />
 
@@ -57,11 +105,10 @@
         android:id="@+id/twoPlayerBoard"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/user2Layout"
+        app:layout_constraintBottom_toTopOf="@id/user1Layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/user1Layout"
-        >
+        app:layout_constraintTop_toBottomOf="@id/user2Layout">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -70,2207 +117,2223 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            >
+            app:layout_constraintTop_toTopOf="parent">
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="horizontal"
-                >
+                android:scrollbars="horizontal">
 
                 <GridLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="fill"
                     android:columnCount="19"
                     android:orientation="horizontal"
-                    android:rowCount="19"
-                    android:layout_gravity="fill"
-                    >
+                    android:rowCount="19">
 
                     <!--0행-->
                     <ImageButton
                         android:id="@+id/board0000"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left_top_corner64"
+                        android:clickable="true"
                         android:focusable="true"
-                        android:clickable="true"/>
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left_top_corner64" />
 
                     <ImageButton
                         android:id="@+id/board0001"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0002"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0003"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0004"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0005"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0006"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0007"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0008"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0009"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0010"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0011"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0012"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0013"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0014"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0015"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0016"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0017"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/top64" />
 
                     <ImageButton
                         android:id="@+id/board0018"
                         android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
                         android:src="@drawable/right_top_corner64" />
 
                     <!--1행-->
                     <ImageButton
                         android:id="@+id/board0100"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
                     <ImageButton
                         android:id="@+id/board0101"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0102"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0103"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0104"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0105"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0106"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0107"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0108"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0109"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0110"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0111"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0112"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0113"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0114"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0115"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0116"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0117"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0118"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--2행@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
                     <ImageButton
                         android:id="@+id/board0200"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
                     <ImageButton
                         android:id="@+id/board0201"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0202"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0203"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0204"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0205"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0206"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0207"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0208"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0209"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0210"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0211"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0212"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0213"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0214"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0215"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0216"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0217"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0218"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--3행@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
                     <ImageButton
                         android:id="@+id/board0300"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0301"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0302"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0303"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board0304"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0305"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0306"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0307"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0308"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0309"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board0310"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0311"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0312"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0313"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0314"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0315"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board0316"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0317"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0318"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--4행-->
                     <ImageButton
                         android:id="@+id/board0400"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0401"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0402"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0403"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0404"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0405"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0406"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0407"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0408"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0409"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0410"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0411"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0412"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0413"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0414"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0415"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0416"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0417"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0418"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--5행-->
                     <ImageButton
                         android:id="@+id/board0500"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0501"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0502"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0503"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0504"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0505"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0506"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0507"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0508"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0509"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0510"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0511"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0512"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0513"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0514"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0515"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0516"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0517"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0518"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--6행-->
                     <ImageButton
                         android:id="@+id/board0600"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0601"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0602"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0603"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0604"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0605"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0606"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0607"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0608"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0609"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0610"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0611"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0612"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0613"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0614"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0615"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0616"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0617"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0618"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--7행-->
                     <ImageButton
                         android:id="@+id/board0700"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0701"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0702"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0703"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0704"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0705"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0706"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0707"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0708"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0709"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0710"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0711"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0712"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0713"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0714"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0715"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0716"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0717"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0718"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--8행-->
                     <ImageButton
                         android:id="@+id/board0800"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0801"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0802"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0803"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0804"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0805"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0806"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0807"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0808"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0809"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0810"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0811"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0812"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0813"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0814"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0815"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0816"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0817"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0818"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--9행-->
                     <ImageButton
                         android:id="@+id/board0900"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board0901"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0902"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0903"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board0904"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0905"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0906"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0907"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0908"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0909"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board0910"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0911"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0912"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0913"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0914"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0915"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board0916"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0917"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board0918"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--10행-->
                     <ImageButton
                         android:id="@+id/board1000"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1001"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1002"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1003"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1004"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1005"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1006"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1007"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1008"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1009"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1010"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1011"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1012"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1013"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1014"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1015"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1016"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1017"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1018"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--11행-->
                     <ImageButton
                         android:id="@+id/board1100"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1101"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1102"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1103"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1104"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1105"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1106"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1107"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1108"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1109"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1110"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1111"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1112"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1113"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1114"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1115"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1116"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1117"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1118"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--12행-->
                     <ImageButton
                         android:id="@+id/board1200"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1201"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1202"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1203"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1204"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1205"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1206"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1207"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1208"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1209"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1210"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1211"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1212"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1213"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1214"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1215"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1216"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1217"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1218"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--13행-->
                     <ImageButton
                         android:id="@+id/board1300"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1301"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1302"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1303"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1304"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1305"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1306"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1307"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1308"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1309"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1310"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1311"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1312"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1313"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1314"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1315"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1316"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1317"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1318"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--14행-->
                     <ImageButton
                         android:id="@+id/board1400"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1401"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1402"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1403"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1404"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1405"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1406"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1407"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1408"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1409"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1410"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1411"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1412"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1413"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1414"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1415"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1416"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1417"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1418"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--15행-->
                     <ImageButton
                         android:id="@+id/board1500"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1501"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1502"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1503"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board1504"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1505"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1506"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1507"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1508"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1509"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board1510"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1511"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1512"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1513"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1514"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1515"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/point64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
 
                     <ImageButton
                         android:id="@+id/board1516"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1517"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1518"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--16행-->
                     <ImageButton
                         android:id="@+id/board1600"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1601"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1602"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1603"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1604"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1605"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1606"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1607"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1608"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1609"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1610"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1611"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1612"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1613"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1614"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1615"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1616"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1617"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1618"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--17행-->
                     <ImageButton
                         android:id="@+id/board1700"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
 
 
                     <ImageButton
                         android:id="@+id/board1701"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1702"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1703"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1704"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1705"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1706"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1707"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1708"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1709"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1710"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1711"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1712"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1713"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1714"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1715"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1716"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1717"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/standard64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
 
                     <ImageButton
                         android:id="@+id/board1718"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
 
                     <!--18행-->
                     <ImageButton
                         android:id="@+id/board1800"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/left_bottom_corner64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left_bottom_corner64" />
 
 
                     <ImageButton
                         android:id="@+id/board1801"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1802"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1803"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1804"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1805"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1806"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1807"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1808"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1809"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1810"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1811"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1812"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1813"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1814"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1815"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1816"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1817"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/bottom64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
 
                     <ImageButton
                         android:id="@+id/board1818"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/right_bottom_corner64"
-                        />
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right_bottom_corner64" />
 
 
                 </GridLayout>
@@ -2286,12 +2349,11 @@
         android:id="@+id/user1Layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/twoPlayerBoard"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="1"
-        >
+        app:layout_constraintTop_toBottomOf="@id/twoPlayerBoard"
+        app:layout_constraintVertical_bias="1">
 
         <ImageView
             android:id="@+id/user1ProfilePicture"
@@ -2299,10 +2361,9 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:src="@drawable/abc_vector_test"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/user1Nickname"
@@ -2312,52 +2373,48 @@
             android:text="@string/waiting"
             android:textColor="@color/black"
             android:textSize="18sp"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/user1ProfilePicture"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/user1Record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:text="@string/user1_record"
             android:layout_margin="10dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:text="@string/user1_record"
+            android:textSize="12sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/user1Nickname"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/user1Nickname"
-            app:layout_constraintBaseline_toBaselineOf="@id/user1Nickname"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/zoomOutButton"
-            android:layout_marginRight="10dp"
-            android:layout_marginLeft="10dp"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:background="@drawable/zoomout_ripple"
-            android:scaleType="fitXY"
             android:clickable="true"
             android:focusable="true"
-            />
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/zoomInButton"
-            app:layout_constraintRight_toLeftOf="@id/zoomOutButton"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             android:background="@drawable/zoomin_ripple"
-            android:scaleType="fitXY"
             android:clickable="true"
             android:focusable="true"
-            />
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/zoomOutButton"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

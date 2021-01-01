@@ -13,5 +13,13 @@
     <string name="join_game">Join Game</string>
     <string name="create_game">Create Game</string>
     <string name="room_num">Room No.(ex.0000)</string>
+    <string name="win_lose">Win Or Lose</string>
+    <string name="retry">Retry</string>
+    <string name="exit">EXIT</string>
+    <string name="win_str">You WIN!!</string>
+    <string name="defeat_str">DEFEAT!!</string>
+    <string name="numberOne">1</string>
+    <string name="temporary_room_num">0000</string>
+    <string name="room_num_indicator">Room No.</string>
 
 </resources>
