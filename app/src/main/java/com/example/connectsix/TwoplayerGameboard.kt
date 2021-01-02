@@ -16,6 +16,7 @@ import androidx.core.graphics.drawable.toDrawable
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
+import kotlin.math.roundToInt
 
 class TwoplayerGameboard : AppCompatActivity() {
 
@@ -58,7 +59,6 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     var confirmX = -1
     var confirmY = -1
-
 
 
     @SuppressLint("ShowToast", "SetTextI18n")
@@ -170,6 +170,8 @@ class TwoplayerGameboard : AppCompatActivity() {
             }
         })
 
+
+
         //데이터의 변화가 있을 때, 즉 상대방이 돌을 두면 DB 변화를 감지해서 내 화면에 변경된 점을 뿌려주는 부분
         database.child("stones").addChildEventListener(object:ChildEventListener{
            @SuppressLint("ResourceAsColor")
@@ -238,11 +240,8 @@ class TwoplayerGameboard : AppCompatActivity() {
                    }
                }
 
-
+               soundPool.play(soundID,1f,1f,0,0,1f);	// 돌 두는 소리가 나는 부분입니다
                turnNum++ // 한 턴이 진행되었음을 의미. 중요한 부분
-
-
-
 
                database.child("turnNum").setValue(turnNum.toString())
 
@@ -307,8 +306,6 @@ class TwoplayerGameboard : AppCompatActivity() {
                 var imageButton : ImageButton = findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
                 imageButton.setOnClickListener {
 
-                    soundPool.play(soundID,1f,1f,0,0,1f);	//작성
-
                     if(stoneClickCnt == 0){ // 처음 클릭한 것이면 확인하기 위해 클릭을 한 번 더하도록 유도합니다.
                                             // 즉 해당 위치를 체크표시합니다.
                         setCheckStone(imageButton, i, j)
@@ -321,6 +318,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                     }else if(stoneClickCnt == 1){ // 두 번째로 클릭한 것이면 해당 위치에 돌을 둡니다.
                         //println("@@@@setonclicklist $turnNum@@@@")
                         if(i==confirmX && j==confirmY) { // 두 번째로 돌을 둔 곳이 같은 위치라면 해당 위치에 돌을 둡니다.
+
                             var stoneStrUpload: String = ""
                             var stoneData: Turn = Turn("ERROR", "ERROR", -1, -1)
 
@@ -374,7 +372,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
     }
 
-    fun changeStoneDependSize(i : Int, j : Int){
+    private fun changeStoneDependSize(i : Int, j : Int){
         val boardStr = "board".plus(if(i <10) "0".plus(i.toString()) else i.toString()).plus(if(j <10) "0".plus(j.toString()) else j.toString())
         val target : Int = resources.getIdentifier(boardStr, "id", packageName)
         val imageButton : ImageButton = findViewById(target)
@@ -433,7 +431,7 @@ class TwoplayerGameboard : AppCompatActivity() {
     }
 
 
-    fun disableClick(pTurn : Int){
+    private fun disableClick(pTurn : Int){
         //println("player1Name : $player1Name // myNickName : $myNickName // pTurn : $pTurn")
         //println("player2Name : $player2Name // myNickName : $myNickName // pTurn : $pTurn")
         if((player1Name == myNickName && pTurn == 2 )|| (player2Name == myNickName && pTurn == 1 )){
@@ -1043,7 +1041,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     /* Initialize User Name
     *  이 코드에서 유저 이름 사용할 수 있도록 초기화 시키는 부분 */
-    fun getUserName(database : DatabaseReference){
+    private fun getUserName(database : DatabaseReference){
         var tempCnt = 0
         database.addValueEventListener(object : ValueEventListener{
             @SuppressLint("ResourceType", "SetTextI18n")
@@ -1133,7 +1131,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     }
 
-    fun zoomBoard32(){
+    private fun zoomBoard32(){
         for(i in 0..18){ // 행
             var str = "0"
             var boardStr = "board"
@@ -1200,7 +1198,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
     }
 
-    fun zoomBoard64(){
+    private fun zoomBoard64(){
         for(i in 0..18){ // 행
             var str = "0"
             var boardStr = "board"
@@ -1269,7 +1267,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
     }
 
-    fun zoomBoard16(){
+    private fun zoomBoard16(){
         for(i in 0..18){ // 행
             var str = "0"
             var boardStr = "board"
@@ -1338,7 +1336,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
     }
 
-    fun printColorBoard(){
+    private fun printColorBoard(){
         //println("@@@@PRINT BOARD@@@@")
         //Log.d("Print Board", "Print Board")
         for(i in 0..18){
@@ -1362,6 +1360,7 @@ class TwoplayerGameboard : AppCompatActivity() {
     }
 
     fun judgeVictory(database: DatabaseReference){
+        println("@@@ JUDGEVICTORY part")
         for(i in 0..13){ // 세로로 다 맞았을 때
             for(j in 0..18){
                 if(stoneColorArray[i][j] == 1 && stoneColorArray[i+1][j] == 1 && stoneColorArray[i+2][j] == 1 && stoneColorArray[i+3][j] == 1 && stoneColorArray[i+4][j] == 1 && stoneColorArray[i+5][j] ==  1){
@@ -1371,6 +1370,8 @@ class TwoplayerGameboard : AppCompatActivity() {
                     initBoards() // 게임 승리 판정이 나면 초기화
                     turnNum = 1
                     showDialog(database, winnerStr)
+
+
                     return
                 }
                 else if(stoneColorArray[i][j] == 2 && stoneColorArray[i+1][j] == 2 && stoneColorArray[i+2][j] == 2 && stoneColorArray[i+3][j] == 2 && stoneColorArray[i+4][j] == 2 && stoneColorArray[i+5][j] ==  2){
@@ -1449,19 +1450,19 @@ class TwoplayerGameboard : AppCompatActivity() {
                     printColorBoard()
                     initBoards()
                     turnNum = 1
-                    showDialog(database, winnerStr)
                     return
                 }
             }
         }
     }
 
-    fun showDialog(database: DatabaseReference, winnerStr : String){
-        println("@@@@ showDialog들어왔습니다.")
+    private fun showDialog(database: DatabaseReference, winnerStr : String){
 
         val builder = AlertDialog.Builder(this)
         val winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
         val loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+
+        var userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
 
         if(myNickName == winnerStr){ // 만약 승리했다면,
             builder.setView(winDialogView)
@@ -1469,10 +1470,35 @@ class TwoplayerGameboard : AppCompatActivity() {
                     //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
                 }
                 .setNegativeButton("EXIT"){_, _ -> // EXIT 누르면 MainActivity로 이동
-                    exitProgress(database)
+                    exitProcess(database)
                 }
                 .setCancelable(false)
                 .show()
+
+            //이겼을 때 win 값 setValue해주고, ratio값을 업데이트해줍니다.
+            userDatabase.addListenerForSingleValueEvent(object: ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for(i in snapshot.children){
+                        if(myNickName == i.child("nickName").value){ // 같은 이름을 찾아서 win value를 1 올려줍니다.
+                            var winData = i.child("win").value.toString()
+                            var loseData = i.child("lose").value.toString()
+                            var winInt = winData.toFloat()
+                            var loseInt = loseData.toFloat()
+                            winInt++
+                            var ratio = (((winInt / (winInt + loseInt))*100*100).roundToInt() / 100F).toString().plus("%") // 소수점 둘 째자리 까지 표기
+                            userDatabase.child(i.key.toString()).child("win").setValue(winInt.toString())
+                            userDatabase.child(i.key.toString()).child("ratio").setValue(ratio)
+                            break
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+
+            })
+
 
         }else if(myNickName != winnerStr){ // 만약 패배했다면,
             builder.setView(loseDialogView)
@@ -1480,14 +1506,33 @@ class TwoplayerGameboard : AppCompatActivity() {
 
                 }
                 .setNegativeButton("EXIT"){_, _ -> // EXIT 누르면 MainActivity로 이동
-                    exitProgress(database)
+                    exitProcess(database)
                 }
                 .setCancelable(false)
                 .show()
+
+            userDatabase.addListenerForSingleValueEvent(object: ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for(i in snapshot.children){
+                        if(myNickName == i.child("nickName").value){ // 같은 이름을 찾아서 win value를 1 올려줍니다.
+                            var loseData = i.child("lose").value.toString()
+                            var loseInt = loseData.toInt()
+                            loseInt++
+                            userDatabase.child(i.key.toString()).child("lose").setValue(loseInt.toString())
+                            break
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+
+            })
         }
     }
 
-    fun exitProgress(database : DatabaseReference){
+    private fun exitProcess(database : DatabaseReference){
         if(serverUser1Name){ // 서버의 player1Id에 내 닉네임이 저장되어 있다면
             var updateUserName = mutableMapOf<String, Any>()
             updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
@@ -1520,7 +1565,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
 
         if(System.currentTimeMillis() <= backKeyPressedTime + 2500){ // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
-            exitProgress(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
+            exitProcess(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
         }
     }
 
@@ -1550,5 +1595,3 @@ class TwoplayerGameboard : AppCompatActivity() {
     }
 
 }
-
-

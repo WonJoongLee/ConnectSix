@@ -16,14 +16,18 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_main.*
 
 //TODO 당장 해야 할 것
-//TODO 소리 늦게 나는 것 해결
+
 
 //TODO 추후에 해야 할 것
+//TODO join game할 때 toast message 뜨는 것 조건 확인해서 없애기
+//TODO 상대방이 들어ㄲ오면 win/lose/ratio 업데이트
 //TODO 게임 끝나면 판정화면 만들고 바둑판 초기화시키기
 //TODO 바둑판 초기화버튼 만들기
-//TODO 바둑판에 돌 둘 때 소리 effect 넣기
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE 게임 판정 후 win/lose/ratio 업데이트
+// DONE 소리 늦게 나는 것 해결
+// DONE 바둑판에 돌 둘 때 소리 effect 넣기
 // DONE Join Game을 통해 방 번호를 눌러 들어가는데, 이 때 없는 방 번호를 입력하면 방 번호가 없다고 Toast message 출력
 // DONE 바둑판 나오는 곳에 몇 번 방인지 알 수 있도록 설정
 // DONE Button크기가 작아 잘못 둘 수도 있으니 확인 마크 추가하기 -> 다이아몬드 버튼을 추가해서 잘못 두는 경우가 없도록 설정함
@@ -53,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         if(SharedData.prefs.getName("nickName", "").isEmpty()){ // 만약 첫 로그인이라면(sharedPreference에 값이 없다면)
             enterButton.setOnClickListener {
                 newNickname = setNickName.text.toString()
-                if (setNickName.length() in 3..12) { // 아이디가 조건에 맞지 않는다면 다시 입력하라고 나옵니다.
+                if (newNickname.length !in 3..12) { // 아이디가 조건에 맞지 않는다면 다시 입력하라고 나옵니다.
                     Toast.makeText(this, "Please enter at least three characters!", Toast.LENGTH_SHORT).show()
                 }else{
                     //var updateUserName = mutableMapOf<String, Any>()
@@ -62,11 +66,26 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Login Success", Toast.LENGTH_SHORT).show()
 
                     FirebaseDatabase.getInstance().reference.child("Users").push().setValue(User(newNickname, "0", "0", "0%"))
+//                    FirebaseDatabase.getInstance().reference.child("Users").addValueEventListener(object:ValueEventListener{
+//                        //새로 등록한 유저의 key값을 sharedPreference로 저장합니다.
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            for(i in snapshot.children){
+//                                if(i.child("nickName").value.toString() == newNickname){
+//                                    SharedData.prefs.setNicknameKey("nicknameKey", i.key.toString())
+//                                }
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {
+//                        }
+//
+//                    })
 
                     setNickName.visibility = GONE
                     enterButton.visibility = GONE
 
                     SharedData.prefs.setName("nickName", newNickname)
+                    //TODO SharedData.prefs.setNicknameKey()
 
                     welcomeSign.text = "Welcome, $newNickname :)"
                     welcomeSign.visibility = VISIBLE
@@ -111,6 +130,20 @@ class MainActivity : AppCompatActivity() {
                     override fun onCancelled(error: DatabaseError) { Log.e("Firebase DB error", "$error") }
                 })
 
+//                FirebaseDatabase.getInstance().reference.child("Users").addListenerForSingleValueEvent(object:ValueEventListener{
+//                    //새로 바꾼 유저의 key를 sharedPreferences로 저장합니다.
+//                    override fun onDataChange(snapshot: DataSnapshot) {
+//                        for(i in snapshot.children){
+//                            if(i.child("nickName").value.toString() == newNickname){
+//                                SharedData.prefs.setNicknameKey("nicknameKey", i.key.toString())
+//                            }
+//                        }
+//                    }
+//
+//                    override fun onCancelled(error: DatabaseError) {
+//                    }
+//                })
+
                 setNickName.visibility = VISIBLE
                 enterButton.visibility = VISIBLE //다시 이름 설정을 할 수 있는 창을 보이게 한다
                 welcomeSign.visibility = GONE // welcome sign을 다시 들어가게 한다.
@@ -119,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                 enterButton.setOnClickListener {
                     newNickname = setNickName.text.toString()
 
-                    if (setNickName.length() in 3..12) {
+                    if (newNickname.length in 3..12) {
 
                         val user: User = User(newNickname, "0", "0", "0%")
                         var isIdTaken = false
