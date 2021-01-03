@@ -56,12 +56,15 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     var playerTurn = 0 // 1이면 player1차례이고, 2면 player2차례입니다.
 
-    var stoneClickCnt = 0
+    var stoneClickCnt = 0 // 빨간 다이아모든 위에 두 번 째 클릭인지 확인하는 변수입니다.
 
-    var confirmX = -1
-    var confirmY = -1
+    var confirmX = -1 // user가 두기로 했던 빨간 diamond와 같은 위치에 돌을 두는지 확인하는 변수들입니다.
+    var confirmY = -1 // 결국 좌표를 확인하기 위한 변수입니다.
 
     var myWinLoseRatio = ""
+
+    var isUserExit = false // 플레이어가 dialog에서 exit을 누르면 게임 보드 화면에서 나가는 것이므로 이 때 true로 바꿔줍니다.
+                           // 이 변수가 필요한 이유는, 이 변수를 사용하지 않으면 dialog가 두 번 띄워지는 오류가 발생합니다.
 
 
     @SuppressLint("ShowToast", "SetTextI18n")
@@ -81,12 +84,31 @@ class TwoplayerGameboard : AppCompatActivity() {
         if (intent.hasExtra("winLoseRatio")) myWinLoseRatio = intent.getStringExtra("winLoseRatio").toString()// 승률 비율을 MainActivity로부터 넘겨받습니다.
 
 
-        user1Record.text = myWinLoseRatio
+        //user1Record.text = myWinLoseRatio
+
+
 
         currentRoomNumber.text = roomNum
 
         var database: DatabaseReference =
             FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
+
+        val userDatabse = FirebaseDatabase.getInstance().reference.child("Users")
+        userDatabse.addListenerForSingleValueEvent(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for(i in snapshot.children){
+                    if (i.child("nickName").value.toString() == myNickName) {
+                        user1Record.text = i.child("win").value.toString().substringBefore(".").plus("/")
+                            .plus(i.child("lose").value.toString()).substringBefore(".").plus("/")
+                            .plus(i.child("ratio").value.toString())
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
 
         println(roomKey)
 
@@ -997,7 +1019,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                     ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        showDialog(database, myNickName)
+                        if(!isUserExit) showDialog(database, myNickName)
                         Toast.makeText(
                             applicationContext,
                             "User left this game.",
@@ -1008,7 +1030,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                     ) { // player2가 나갔을 때, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        showDialog(database, myNickName)
+                        if(!isUserExit) showDialog(database, myNickName)
                         Toast.makeText(
                             applicationContext,
                             "User left this game.",
@@ -1321,7 +1343,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                     printColorBoard()
                     initBoards() // 게임 승리 판정이 나면 초기화
                     turnNum = 1
-                    showDialog(database, winnerStr)
+                    if(!isUserExit) showDialog(database, myNickName)
 
 
                     return
@@ -1331,7 +1353,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                     printColorBoard()
                     initBoards()
                     turnNum = 1
-                    showDialog(database, winnerStr)
+                    if(!isUserExit) showDialog(database, myNickName)
                     return
                 }
             }
@@ -1414,15 +1436,15 @@ class TwoplayerGameboard : AppCompatActivity() {
 
         if (myNickName == winnerStr) { // 만약 승리했다면,
             builder.setView(winDialogView)
-                .setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
                     //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
-                }
+                //}
                 .setNegativeButton("EXIT") { _, _ -> // EXIT 누르면 MainActivity로 이동
+                    isUserExit = true
                     exitProcess(database)
                 }
                 .setCancelable(false)
                 .show()
-
 
             //이겼을 때 win 값 setValue해주고, ratio값을 업데이트해줍니다.
             userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -1453,15 +1475,6 @@ class TwoplayerGameboard : AppCompatActivity() {
 
 
         } else if (myNickName != winnerStr) { // 만약 패배했다면,
-            builder.setView(loseDialogView)
-                .setPositiveButton("RETRY") { _, _ -> //재경기 누르면
-
-                }
-                .setNegativeButton("EXIT") { _, _ -> // EXIT 누르면 MainActivity로 이동
-                    exitProcess(database)
-                }
-                .setCancelable(false)
-                .show()
 
             userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -1488,6 +1501,18 @@ class TwoplayerGameboard : AppCompatActivity() {
                 }
 
             })
+
+            builder.setView(loseDialogView)
+                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                //}
+                .setNegativeButton("EXIT") { _, _ -> // EXIT 누르면 MainActivity로 이동
+                    isUserExit = true
+                    exitProcess(database)
+                }
+                .setCancelable(false)
+                .show()
+
+
         }
     }
 
@@ -1525,7 +1550,8 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
 
         if (System.currentTimeMillis() <= backKeyPressedTime + 2500) { // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
-            exitProcess(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
+            showDialog(database, enemyName)
+            //exitProcess(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
         }
     }
 

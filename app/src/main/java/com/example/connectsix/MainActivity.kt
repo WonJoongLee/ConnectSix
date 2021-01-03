@@ -14,13 +14,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 
 //TODO 당장 해야 할 것
-//TODO 이겨서 다시 메인 액티비티로 돌아온 후 방을 들어가면 winLoseRatio가 바뀌지 않는 에러 해결해야 함
+
 
 //TODO 추후에 해야 할 것
 //TODO 게임 끝나면 판정화면 만들고 바둑판 초기화시키기
 //TODO 바둑판 초기화버튼 만들기
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE 이겨서 다시 메인 액티비티로 돌아온 후 방을 들어가면 winLoseRatio가 바뀌지 않는 에러 해결해야 함
+// DONE 플레이어(본인)가 나갈 때 Dialog가 두 번 띄워지는 에러 해결(isUserExit변수를 통해서 해결)
 // DONE 유저 나갔을 때 나갔다고 Toast message 띄워줄 것 + 승리 화면(dialog) 띄워주는 것
 // DONE 상대방이 들어오면 전적 반영해서 nickname 옆에 보여주는 것
 // DONE 빈 방에 들어갔을 때 바로 판정 처리 나는 것 -> TwoplayerGameboard.kt 1093,1099번 줄 확인하면 된다.
