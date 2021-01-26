@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -12,9 +14,13 @@ import com.example.connectsix.sharedRef.SharedData
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
+import kotlinx.coroutines.*
+import java.lang.Runnable
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 //TODO 당장 해야 할 것
-
 
 //TODO 추후에 해야 할 것
 //TODO 게임 끝나면 판정화면 만들고 바둑판 초기화시키기
@@ -46,6 +52,7 @@ import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 class MainActivity : AppCompatActivity() {
 
     var winLoseRatio = ""
+    var roomNum = ""
 
     @SuppressLint("ShowToast", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,9 +63,6 @@ class MainActivity : AppCompatActivity() {
 
         var newNickname: String = ""
         var pastNickName = ""
-        var roomNum = ""
-
-
 
         if (SharedData.prefs.getName("nickName", "")
                 .isEmpty()
@@ -242,36 +246,45 @@ class MainActivity : AppCompatActivity() {
 
         //Create Game 버튼 눌렀을 때 방 생성 및 입장
         createGameButton.setOnClickListener {
+            val database = FirebaseDatabase.getInstance().reference.child("roomId")
             roomNum = roomNumberEdittext.text.toString()
 
-            if (roomNum <= "9999" && roomNum >= "0000") { // roomNum은 0000부터 9999 사이여야 한다.
-                FirebaseDatabase.getInstance().reference.child("roomId").push()
-                    .setValue(Room(roomNum, newNickname, "", "1"))
-                FirebaseDatabase.getInstance().reference.child("roomId")
-                    .addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            for (index in snapshot.children) {
-                                if (index.child("roomId").value.toString() == roomNum) {
-                                    println("@@@@ ${index.key}")
-                                    intent.putExtra("roomKey", index.key)
-                                        .toString()//roomNum을 intent에 추가해서 게임 화면으로 넘깁니다.
-                                    intent.putExtra("player1NickName", newNickname)
-                                    intent.putExtra("roomNum", roomNum)
-                                    intent.putExtra("winLoseRatio", winLoseRatio)
-                                    println("@@@@ $winLoseRatio")
-                                    startActivity(intent)
-                                }
+            println("going to temp0126")//TODO create game에 넣기
+            //runBlocking { println("@@@###${temp10(roomNum)}") }
+            //runBlocking { println("@@@###${temp12(roomNum)}") }
+
+            GlobalScope.launch {
+                println("@@@###${temp12(roomNum)}") // 여기서 드디어 제대로 받음 FINALLY!!!
+            }
+
+            //TODO 방이 있으면 방 생성이 불가능하도록 설정
+            if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "0000".toInt()) { // roomNum은 0000부터 9999 사이여야 한다.
+                database.push().setValue(Room(roomNum, newNickname, "", "1"))
+                database.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for (index in snapshot.children) {
+                            if (index.child("roomId").value.toString() == roomNum) {
+                                //println("@@@@ ${index.key}")
+                                intent.putExtra("roomKey", index.key)
+                                    .toString()//roomNum을 intent에 추가해서 게임 화면으로 넘깁니다.
+                                intent.putExtra("player1NickName", newNickname)
+                                intent.putExtra("roomNum", roomNum)
+                                intent.putExtra("winLoseRatio", winLoseRatio)
+                                //println("@@@@ $winLoseRatio")
+                                startActivity(intent)
                             }
                         }
+                    }
 
-                        override fun onCancelled(error: DatabaseError) {
-                            Log.e("Firebase DB error", "$error")
-                        }
-                    })
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("Firebase DB error", "$error")
+                    }
+                })
             } else {
                 Toast.makeText(this, "Please check the room number again.", Toast.LENGTH_SHORT)
                     .show()
             }
+
 
         }
 
@@ -280,6 +293,8 @@ class MainActivity : AppCompatActivity() {
         joinGameButton.setOnClickListener {
             roomNum = roomNumberEdittext.text.toString()
             var isExistRoom = false
+
+
 
             if (roomNum <= "9999" && roomNum >= "0000") { // roomNum은 0000부터 9999 사이여야 한다.
                 FirebaseDatabase.getInstance().reference.child("roomId")
@@ -324,8 +339,412 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //이 함수는 1초를 잘 기다리고 값을 넘겨줌
+    private suspend fun temp0126(roomNum: String) : Boolean{
+        var deffered = CoroutineScope(Dispatchers.IO).async{
+            delay(1000L)
+            println("world")
+            false
+        }
+        println("### ${deffered.await()}")
+        return deffered.await()
+    }
+
+    private suspend fun temp10(roomNum: String) : Boolean{
+        var deffered = CoroutineScope(Dispatchers.IO).async{
+            val database = FirebaseDatabase.getInstance().reference.child("roomId")
+            var rValue = true
+            database.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (i in snapshot.children) {
+                        println("$roomNum <= roomNum, ${i.child("roomId").toString() } <= DB data")
+                        if (roomNum == i.child("roomId").value.toString()) {
+                            rValue = false
+                        }
+                    }
+                    Log.e("e", "1")
+                }
+                override fun onCancelled(error: DatabaseError) {}
+            })
+            Log.e("e", "2")
+            rValue
+        }
+        return deffered.await()
+    }
+
+    private suspend fun temp13(roomNum: String) : Boolean{
+        var deffered = CoroutineScope(Dispatchers.IO).async{
+            val database = FirebaseDatabase.getInstance().reference.child("roomId")
+            var rValue = true
+            database.orderByChild("roomId").equalTo(roomNum).addValueEventListener(object:ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    rValue = false
+//                    for(i in snapshot.children){
+//                        println("$roomNum <= roomNum, ${i.child("roomId").toString() } <= DB data")
+////                        if (roomNum == i.child("roomId").value.toString()) {
+////                            rValue = false
+////                        }
+//                        rValue = false
+//                    }
+                    Log.e("e", "1")
+                    println("@@@ for문 끝난 후 rValue = $rValue")
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+            Log.e("e", "2")
+            rValue
+        }
+        return deffered.await()
+    }
+
+    private suspend fun temp12(roomNum: String) = suspendCoroutine<Boolean> { // 원래는 resume 있어야 하는 것 같은데 그냥 적용된다. 공부해봐야 한다.
+        Handler(Looper.getMainLooper()).postDelayed({
+            val database = FirebaseDatabase.getInstance().reference.child("roomId")
+            var rValue = true
+            database.orderByChild("roomId").equalTo(roomNum).addListenerForSingleValueEvent(object :
+                ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    println("@@@ 찾은 값 : ${snapshot.value.toString()}, 원래 값 : $roomNum")
+                    var cnt = 0
+                    snapshot.children.forEach { _ ->
+                        cnt++
+                        if (cnt >= 2) { // 두 개 이상이면 그 때는 진짜 있는 것이므로 false로 바꾼다.
+                            rValue = false
+                        }
+                    }
+                    Log.e("e", "1")
+                    println("@@@ for문 끝난 후 rValue = $rValue")
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+//            database.addListenerForSingleValueEvent(object : ValueEventListener {
+//                override fun onDataChange(snapshot: DataSnapshot) {
+//                    for (i in snapshot.children) {
+//                        println("$roomNum <= roomNum, ${i.child("roomId").toString() } <= DB data")
+//                        if (roomNum == i.child("roomId").value.toString()) {
+//                            rValue = false
+//                            it.resume(rValue)
+//                        }
+//                    }
+//                    Log.e("e", "1")
+//                }
+//
+//                override fun onCancelled(error: DatabaseError) {}
+//            })
+            Log.e("e", "2")
+
+        }, 500)
+    }
+
+    //아래는 잘 true, false를 바꿔주면 잘 알아서 바꿔짐
+    private suspend fun temp11(roomNum: String) = suspendCoroutine<Boolean> {
+        Handler(Looper.getMainLooper()).postDelayed(object:Runnable{
+            override fun run() {
+                it.resume(false)
+            }
+        }, 1000)
+    }
+
+    suspend fun checkIsRoom(roomNum: String): Boolean {
+        //return@withContext rValue
+        return CoroutineScope(Dispatchers.IO).async {
+            Log.e("1", "1")
+            val database = FirebaseDatabase.getInstance().reference.child("roomId")
+            var rValue = true
+            database.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (i in snapshot.children) {
+                        //println("$roomNum <= roomNum, ${i.child("roomId").toString() } <= DB data")
+                        if (roomNum == i.child("roomId").value.toString()) {
+                            rValue = false
+                        }
+                    }
+                    Log.e("2", "2")
+                    //println("for문끝나고 출력하는 rValue = $rValue")
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+            Log.e("3", "3")
+            rValue
+        }.await()
+    }
+
+    private suspend fun checkIsRoom7(tempRoomNum: String) : Boolean{
+        return suspendCoroutine { continuation ->
+            FirebaseDatabase.getInstance().reference.child("roomId").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    Log.e("2", "2")
+                    for (i in snapshot.children) {
+                        //println("$tempRoomNum <= roomNum, ${i.child("roomId").toString() } <= DB data")
+                        if (tempRoomNum == i.child("roomId").value.toString()) {
+                            continuation.resume(false)
+                            break
+                        }
+                    }
+                    Log.e("3", "3")
+                    continuation.resume(true)
+                    //println("for문끝나고 출력하는 rValue = $rValue")
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("error", error.toString())
+                    continuation.resumeWithException(error.toException())
+                }
+            })
+        }
+    }
+
+    private suspend fun checkIsRoom6(tempRoomNum: String) =
+        suspendCoroutine<Boolean> { continuation ->
+            Log.e("1", "1")
+            val roomDatabase = FirebaseDatabase.getInstance().reference.child("roomId")
+            var rValue = true
+            FirebaseDatabase.getInstance().reference.child("roomId").addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        Log.e("2", "2")
+                        for (i in snapshot.children) {
+                            //println("$tempRoomNum <= roomNum, ${i.child("roomId").toString() } <= DB data")
+                            if (tempRoomNum == i.child("roomId").value.toString()) {
+                                rValue = false
+                                continuation.resume(rValue)
+                                break
+                            }
+                        }
+                        Log.e("3", "3")
+                        continuation.resume(rValue)
+                        //println("for문끝나고 출력하는 rValue = $rValue")
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("error", error.toString())
+                        continuation.resumeWithException(error.toException())
+                    }
+                })
+            Log.e("4", "4")
+            //continuation.resume(rValue)
+        }
+
+    private suspend fun checkIsRoom4() = suspendCoroutine<Boolean> {
+        Handler(Looper.getMainLooper()).postDelayed(object : Runnable {
+            override fun run() {
+                Log.e("1", "1")
+                val database = FirebaseDatabase.getInstance().reference.child("roomId")
+                var rValue = true
+                database.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for (i in snapshot.children) {
+                            println(
+                                "$roomNum <= roomNum, ${
+                                    i.child("roomId").toString()
+                                } <= DB data"
+                            )
+                            if (roomNum == i.child("roomId").value.toString()) {
+                                rValue = false
+                            }
+                        }
+                        Log.e("2", "2")
+                        //println("for문끝나고 출력하는 rValue = $rValue")
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {}
+                })
+                Log.e("3", "3")
+                it.resume(rValue)
+            }
+        }, 2000)
+    }
+
+    suspend fun temp3(database: DatabaseReference, roomNum: String): Boolean =
+        withContext(Dispatchers.Default) {
+            var bool = true
+            database.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    Log.e("3", "3")
+
+                    for (i in snapshot.children) {
+                        println("$roomNum <= roomNum, ${i.child("roomId").toString()} <= DB data")
+                        if (roomNum == i.child("roomId").value.toString()) {
+                            bool = false
+                        }
+                    }
+                    println("for문끝나고 출력하는 rValue = $bool")
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+            return@withContext bool
+        }
+
+
+    suspend fun checkIsRoom2(roomNum: String): Boolean {
+        val database = FirebaseDatabase.getInstance().reference.child("roomId")
+        var rValue = true
+        Log.e("1", "1")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            Log.e("2", "2")
+
+            val check = CoroutineScope(Dispatchers.IO).async {
+                database.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        println("@@@@ 3")
+                        Log.e("3", "3")
+
+                        for (i in snapshot.children) {
+                            println(
+                                "$roomNum <= roomNum, ${
+                                    i.child("roomId").toString()
+                                } <= DB data"
+                            )
+                            if (roomNum == i.child("roomId").value.toString()) {
+                                rValue = false
+                            }
+                        }
+                        println("for문끝나고 출력하는 rValue = $rValue")
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+                })
+
+            }.await()
+
+            withContext(Dispatchers.Main) {
+                //rValue = check
+            }
+        }
+
+        Log.e("5", "5")
+        return rValue
+    }
+
+    fun checkIsRoom3(roomNum: String): Boolean {
+        val database = FirebaseDatabase.getInstance().reference.child("roomId")
+        var rValue = true
+        Log.e("1", "1")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            Log.e("2", "2")
+            val check = CoroutineScope(Dispatchers.IO).async {
+                rValue = temp(database, roomNum)
+                rValue
+            }.await()
+
+            withContext(Dispatchers.Main) {
+                rValue = check
+            }
+        }
+
+        Log.e("5", "5")
+        return rValue
+    }
+
+    //방이 있는지 확인하는 코드입니다. false를 반환하면 이미 room Number가 있어서 해당 방 번호로 방을 생성하지 못하는 경우입니다.
+    //true를 return하면 방 번호가 아직 생성되지 않아 방을 생성할 수 있다는 것입니다.
+    fun checkIsRoom5(roomNum: String): Boolean {
+        val database = FirebaseDatabase.getInstance().reference.child("roomId")
+        var rValue = true
+        println("@@@@ 1")
+        runBlocking {
+            val job: Job = launch {
+                rValue = temp(database, roomNum)
+            }
+            job.join()
+            println("@@@@ Rvalue is ${rValue}")
+        }
+        println("@@@@@ 6")
+        return rValue
+    }
+
+    suspend fun temp(database: DatabaseReference, roomNum: String): Boolean = runBlocking {
+        var rValue = true
+        println("@@@@@ 2")
+        Log.e("2", "2")
+
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val check = CoroutineScope(Dispatchers.IO).async {
+                database.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        println("@@@@ 3")
+                        Log.e("3", "3")
+
+                        for (i in snapshot.children) {
+                            println(
+                                "$roomNum <= roomNum, ${
+                                    i.child("roomId").toString()
+                                } <= DB data"
+                            )
+                            if (roomNum == i.child("roomId").value.toString()) {
+                                rValue = false
+                            }
+                        }
+                        println("for문끝나고 출력하는 rValue = $rValue")
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+                })
+
+                rValue
+            }.await()
+
+            withContext(Dispatchers.Main) {
+                rValue = check
+            }
+        }
+        //delay(500)
+        println("@@@@ 4")
+        Log.e("4", "4")
+
+        //return rValue
+        rValue
+    }
+
+    suspend fun temp2(database: DatabaseReference, roomNum: String): Boolean {
+        var rValue = true
+        println("@@@@@ 2")
+
+        coroutineScope {
+            println("@@@@@ 3")
+            val lnch = launch {
+
+                database.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        println("@@@@ 4")
+                        for (i in snapshot.children) {
+                            println(
+                                "$roomNum <= roomNum, ${
+                                    i.child("roomId").toString()
+                                } <= DB data"
+                            )
+                            if (roomNum == i.child("roomId").value.toString()) {
+                                rValue = false
+                            }
+                        }
+                        println("for문끝나고 출력하는 rValue = $rValue")
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {}
+
+                })
+            }
+            lnch.join()//완료까지 대기
+        }
+        //delay(500)
+        println("@@@@ 5")
+        return rValue
+    }
+
+
     fun updateUserRatio(userNickName: String) {
-        var database = FirebaseDatabase.getInstance().reference.child("Users")
+        val database = FirebaseDatabase.getInstance().reference.child("Users")
         var ratio = ""
 
 

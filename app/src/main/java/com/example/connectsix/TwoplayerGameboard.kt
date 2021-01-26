@@ -93,8 +93,8 @@ class TwoplayerGameboard : AppCompatActivity() {
         var database: DatabaseReference =
             FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
 
-        val userDatabse = FirebaseDatabase.getInstance().reference.child("Users")
-        userDatabse.addListenerForSingleValueEvent(object : ValueEventListener{
+        val userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
+        userDatabase.addListenerForSingleValueEvent(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 for(i in snapshot.children){
                     if (i.child("nickName").value.toString() == myNickName) {
