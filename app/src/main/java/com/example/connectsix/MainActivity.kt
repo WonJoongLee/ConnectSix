@@ -247,6 +247,7 @@ class MainActivity : AppCompatActivity() {
         //Create Game 버튼 눌렀을 때 방 생성 및 입장
         createGameButton.setOnClickListener {
             val database = FirebaseDatabase.getInstance().reference.child("roomId")
+            var roomA = false
             roomNum = roomNumberEdittext.text.toString()
 
             println("going to temp0126")//TODO create game에 넣기
@@ -254,36 +255,68 @@ class MainActivity : AppCompatActivity() {
             //runBlocking { println("@@@###${temp12(roomNum)}") }
 
             GlobalScope.launch {
-                println("@@@###${temp12(roomNum)}") // 여기서 드디어 제대로 받음 FINALLY!!!
-            }
-
-            //TODO 방이 있으면 방 생성이 불가능하도록 설정
-            if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "0000".toInt()) { // roomNum은 0000부터 9999 사이여야 한다.
-                database.push().setValue(Room(roomNum, newNickname, "", "1"))
-                database.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        for (index in snapshot.children) {
-                            if (index.child("roomId").value.toString() == roomNum) {
-                                //println("@@@@ ${index.key}")
-                                intent.putExtra("roomKey", index.key)
-                                    .toString()//roomNum을 intent에 추가해서 게임 화면으로 넘깁니다.
-                                intent.putExtra("player1NickName", newNickname)
-                                intent.putExtra("roomNum", roomNum)
-                                intent.putExtra("winLoseRatio", winLoseRatio)
-                                //println("@@@@ $winLoseRatio")
-                                startActivity(intent)
+                if(isRoomAvailable(roomNum)){ // 만약 방이 없으면, 즉 isRoomAvailable이 true이므로 방 생성 가능하다.
+                    if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "0000".toInt()) { // roomNum은 0000부터 9999 사이여야 한다.
+                        database.push().setValue(Room(roomNum, newNickname, "", "1"))
+                        database.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                for (index in snapshot.children) {
+                                    if (index.child("roomId").value.toString() == roomNum) {
+                                        //println("@@@@ ${index.key}")
+                                        intent.putExtra("roomKey", index.key)
+                                            .toString()//roomNum을 intent에 추가해서 게임 화면으로 넘깁니다.
+                                        intent.putExtra("player1NickName", newNickname)
+                                        intent.putExtra("roomNum", roomNum)
+                                        intent.putExtra("winLoseRatio", winLoseRatio)
+                                        //println("@@@@ $winLoseRatio")
+                                        startActivity(intent)
+                                    }
+                                }
                             }
-                        }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("Firebase DB error", "$error")
+                            }
+                        })
+                    } else {
+                        Toast.makeText(applicationContext, "Please check the room number again.", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }else{
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "The room number is already taken.\nPlease try it again.", Toast.LENGTH_LONG)
+                            .show()
                     }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.e("Firebase DB error", "$error")
-                    }
-                })
-            } else {
-                Toast.makeText(this, "Please check the room number again.", Toast.LENGTH_SHORT)
-                    .show()
+                }
             }
+
+//            if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "0000".toInt()) { // roomNum은 0000부터 9999 사이여야 한다.
+//                database.push().setValue(Room(roomNum, newNickname, "", "1"))
+//                database.addListenerForSingleValueEvent(object : ValueEventListener {
+//                    override fun onDataChange(snapshot: DataSnapshot) {
+//                        for (index in snapshot.children) {
+//                            if (index.child("roomId").value.toString() == roomNum) {
+//                                //println("@@@@ ${index.key}")
+//                                intent.putExtra("roomKey", index.key)
+//                                    .toString()//roomNum을 intent에 추가해서 게임 화면으로 넘깁니다.
+//                                intent.putExtra("player1NickName", newNickname)
+//                                intent.putExtra("roomNum", roomNum)
+//                                intent.putExtra("winLoseRatio", winLoseRatio)
+//                                //println("@@@@ $winLoseRatio")
+//                                startActivity(intent)
+//                            }
+//                        }
+//                    }
+//
+//                    override fun onCancelled(error: DatabaseError) {
+//                        Log.e("Firebase DB error", "$error")
+//                    }
+//                })
+//            } else {
+//                Toast.makeText(this, "Please check the room number again.", Toast.LENGTH_SHORT)
+//                    .show()
+//            }
 
 
         }
@@ -398,7 +431,7 @@ class MainActivity : AppCompatActivity() {
         return deffered.await()
     }
 
-    private suspend fun temp12(roomNum: String) = suspendCoroutine<Boolean> { // 원래는 resume 있어야 하는 것 같은데 그냥 적용된다. 공부해봐야 한다.
+    private suspend fun isRoomAvailable(roomNum: String) = suspendCoroutine<Boolean> { // 원래는 resume 있어야 하는 것 같은데 그냥 적용된다. 공부해봐야 한다.
         Handler(Looper.getMainLooper()).postDelayed({
             val database = FirebaseDatabase.getInstance().reference.child("roomId")
             var rValue = true
@@ -409,13 +442,13 @@ class MainActivity : AppCompatActivity() {
                     var cnt = 0
                     snapshot.children.forEach { _ ->
                         cnt++
-                        if (cnt >= 2) { // 두 개 이상이면 그 때는 진짜 있는 것이므로 false로 바꾼다.
+                        if (cnt >= 1) { // 두 개 이상이면 그 때는 진짜 있는 것이므로 false로 바꾼다.
                             rValue = false
                         }
                     }
                     Log.e("e", "1")
                     println("@@@ for문 끝난 후 rValue = $rValue")
-
+                    it.resume(rValue)
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
