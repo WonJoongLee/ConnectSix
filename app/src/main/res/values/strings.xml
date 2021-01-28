@@ -21,5 +21,17 @@
     <string name="numberOne">1</string>
     <string name="temporary_room_num">0000</string>
     <string name="room_num_indicator">Room No.</string>
-
+    <string name="change_nickname">Change Nickname</string>
+    <string name="welcome_back">Welcome back,</string>
+    <string name="have_a_great_day">Have a great day:)</string>
+    <string name="please_enter_room_num">Please enter the room number.</string>
+    <string name="id_at_least_three_characters">Please enter at least three characters.</string>
+    <string name="login_success">Login Success</string>
+    <string name="change_name_lose_data">If you change name, you will lose data. If you still want to change, please click the button one more time</string>
+    <string name="nickname_already_taken">is already taken. Please try it again.</string>
+    <string name="nickname_between_three_twelve">Please set nickname between 3 and 12 letters</string>
+    <string name="check_room_num_again">Please check the room number again.</string>
+    <string name="room_num_already_taken">The room number is already taken.</string>
+    <string name="user_left">User left this game.</string>
+    <string name="one_more_click_exit">Warning : Click once more to exit game!</string>
 </resources>

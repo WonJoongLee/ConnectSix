@@ -100,7 +100,7 @@
 
         <TextView
             android:id="@+id/welcomeSign"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
@@ -116,7 +116,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#AEAEAE"
         android:padding="5dp"
-        android:text="Change Nickname"
+        android:text="@string/change_nickname"
         android:textColor="@color/black"
         android:textSize="12sp"
         android:visibility="gone"
@@ -134,7 +134,8 @@
         app:layout_constraintBottom_toTopOf="@id/roomNumberEdittext"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/changeNickname" />
+        app:layout_constraintTop_toBottomOf="@id/changeNickname"
+        android:visibility="invisible"/>
 
 
     <EditText

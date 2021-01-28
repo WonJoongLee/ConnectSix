@@ -2,10 +2,13 @@ package com.example.connectsix
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.Service
+import android.content.Intent
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Bundle
-import android.provider.Settings
+import android.os.IBinder
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
@@ -14,7 +17,6 @@ import androidx.core.content.ContextCompat
 import com.example.connectsix.sharedRef.SharedData
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
-import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 class TwoplayerGameboard : AppCompatActivity() {
@@ -71,6 +73,8 @@ class TwoplayerGameboard : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.twoplayer_gameboard)
+//        startService(Intent(this, UnCatchTaskService.class
+        startService(Intent(this, UnCatchTaskService::class.java))
 
         var soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
         var soundID = soundPool.load(this, R.raw.sound_stone, 1)
@@ -94,13 +98,17 @@ class TwoplayerGameboard : AppCompatActivity() {
             FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
 
         val userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
-        userDatabase.addListenerForSingleValueEvent(object : ValueEventListener{
+        userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                for(i in snapshot.children){
+                for (i in snapshot.children) {
                     if (i.child("nickName").value.toString() == myNickName) {
-                        user1Record.text = i.child("win").value.toString().substringBefore(".").plus("/")
-                            .plus(i.child("lose").value.toString()).substringBefore(".").plus("/")
-                            .plus(i.child("ratio").value.toString())
+                        user1Record.text =
+                            i.child("win").value.toString().substringBefore(".").plus(
+                                "/"
+                            )
+                                .plus(i.child("lose").value.toString()).substringBefore(".")
+                                .plus("/")
+                                .plus(i.child("ratio").value.toString())
                     }
                 }
             }
@@ -1015,25 +1023,26 @@ class TwoplayerGameboard : AppCompatActivity() {
                     }
 
                     if (i.key.equals("player1Id") && i.value.toString()
-                            .isEmpty() && turnNum != 1
+                            .isEmpty() && turnNum > 2
                     ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        if(!isUserExit) showDialog(database, myNickName)
+                        if (!isUserExit) showDialog(database, myNickName)
                         Toast.makeText(
                             applicationContext,
-                            "User left this game.",
+                            getString(R.string.user_left),
                             Toast.LENGTH_SHORT
                         ).show()
                     } else if (i.key.equals("player2Id") && i.value.toString()
-                            .isEmpty() && turnNum != 1
+                            .isEmpty() && turnNum > 2
                     ) { // player2가 나갔을 때, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        if(!isUserExit) showDialog(database, myNickName)
+                        if (!isUserExit) showDialog(database, myNickName)
+                        println("turnNUM!!!! : $turnNum")
                         Toast.makeText(
                             applicationContext,
-                            "User left this game.",
+                            getString(R.string.user_left),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -1339,21 +1348,23 @@ class TwoplayerGameboard : AppCompatActivity() {
             for (j in 0..18) {
                 if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j] == 1 && stoneColorArray[i + 2][j] == 1 && stoneColorArray[i + 3][j] == 1 && stoneColorArray[i + 4][j] == 1 && stoneColorArray[i + 5][j] == 1) {
                     winnerStr = player1Name
+                    println("### 1")
                     //Toast.makeText(this, "1$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards() // 게임 승리 판정이 나면 초기화
                     turnNum = 1
-                    if(!isUserExit) showDialog(database, myNickName)
-
-
+                    showDialog(database, winnerStr)
+                    //if(!isUserExit) showDialog(database, myNickName)
                     return
                 } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j] == 2 && stoneColorArray[i + 2][j] == 2 && stoneColorArray[i + 3][j] == 2 && stoneColorArray[i + 4][j] == 2 && stoneColorArray[i + 5][j] == 2) {
                     winnerStr = player2Name
+                    println("### 2")
                     //Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
-                    if(!isUserExit) showDialog(database, myNickName)
+                    showDialog(database, winnerStr)
+                    //if(!isUserExit) showDialog(database, myNickName)
                     return
                 }
             }
@@ -1434,6 +1445,10 @@ class TwoplayerGameboard : AppCompatActivity() {
 
         var userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
 
+        println("### winnerStr : $winnerStr, myNickName : $myNickName")
+
+
+
         if (myNickName == winnerStr) { // 만약 승리했다면,
             builder.setView(winDialogView)
                 //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
@@ -1445,6 +1460,9 @@ class TwoplayerGameboard : AppCompatActivity() {
                 }
                 .setCancelable(false)
                 .show()
+                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+
+
 
             //이겼을 때 win 값 setValue해주고, ratio값을 업데이트해줍니다.
             userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -1511,6 +1529,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                 }
                 .setCancelable(false)
                 .show()
+                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
 
 
         }
@@ -1531,7 +1550,7 @@ class TwoplayerGameboard : AppCompatActivity() {
         //database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
 
         database.removeValue() // 마지막으로 데이터베이스 항목 자체를 삭제합니다.
-        Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
         finish()
     }
 
@@ -1545,7 +1564,7 @@ class TwoplayerGameboard : AppCompatActivity() {
 
         if (System.currentTimeMillis() > backKeyPressedTime + 2500) { // 만약 클릭한 시간이 2.5초가 지났다면연(연속적으로 클릭한 것이 아닐 때)
             backKeyPressedTime = System.currentTimeMillis()
-            Toast.makeText(this, "주의 : 한번 더 누르시면 게임이 나가집니다!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.one_more_click_exit), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -1605,4 +1624,34 @@ class TwoplayerGameboard : AppCompatActivity() {
         printColorBoard()
     }
 
+}
+
+class UnCatchTaskService : Service() { //
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent){//사용자가 나갔을 때 처리
+        Log.e("onTaskRemoved", "onTaskRemoved")
+        Log.e("nickName", SharedData.prefs.getName("nickName", ""))
+        val database = FirebaseDatabase.getInstance().reference.child("roomId")
+        database.orderByChild("player1Id").equalTo(SharedData.prefs.getName("nickName", "")).addListenerForSingleValueEvent(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    println("###@@@ $snapshot")
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+
+            })
+        database.orderByChild("player2Id").equalTo(SharedData.prefs.getName("nickName", "")).addListenerForSingleValueEvent(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    println("###@@@ $snapshot")
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+       stopSelf()
+    }
 }

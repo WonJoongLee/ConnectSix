@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ConnectSix</string>
+    <string name="mainAppName">Connect Six</string>
+    <string name="gameStart">게임 시작</string>
+    <string name="user1_name">User1NickName</string>
+    <string name="user2_name">User2NickName</string>
+    <string name="user1_record">User1Record</string>
+    <string name="user2_record">User2Record</string>
+    <string name="create_account">계정 생성</string>
+    <string name="nickname">닉네임</string>
+    <string name="waiting">Waiting…</string>
+    <string name="random_match">랜덤 매치</string>
+    <string name="join_game">게임 입장</string>
+    <string name="create_game">게임 생성</string>
+    <string name="room_num">Room No.(ex.0000)</string>
+    <string name="win_lose">Win Or Lose</string>
+    <string name="retry">Retry</string>
+    <string name="exit">나가기</string>
+    <string name="win_str">승리!!</string>
+    <string name="defeat_str">패배!!</string>
+    <string name="numberOne">1</string>
+    <string name="temporary_room_num">0000</string>
+    <string name="room_num_indicator">Room No.</string>
+    <string name="change_nickname">닉네임 변경</string>
+    <string name="welcome_back">환영합니다</string>
+    <string name="have_a_great_day">좋은 하루 되세요.</string>
+    <string name="please_enter_room_num">방 번호를 입력해주세요.</string>
+    <string name="id_at_least_three_characters">세 글자 이상 입력해주세요.</string>
+    <string name="login_success">로그인 성공</string>
+    <string name="change_name_lose_data">닉네임을 변경하시면 기존 데이터를 잃게 됩니다. 바꾸고 싶으시면 한 번 더 클릭해주세요.</string>
+    <string name="nickname_already_taken">은 이미 사용중입니다.</string>
+    <string name="nickname_between_three_twelve">닉네임을 세 글자에서 열두 글자 사이로 해주세요.</string>
+    <string name="check_room_num_again">방 번호를 다시 확인해주세요.</string>
+    <string name="room_num_already_taken">해당 방 번호가 이미 사용중입니다.</string>
+    <string name="user_left">상대방이 나갔습니다.</string>
+    <string name="one_more_click_exit">주의 : 한 번 더 누르면 나가집니다!</string>
+</resources>
