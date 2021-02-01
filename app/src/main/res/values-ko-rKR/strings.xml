@@ -35,4 +35,5 @@
     <string name="room_num_already_taken">해당 방 번호가 이미 사용중입니다.</string>
     <string name="user_left">상대방이 나갔습니다.</string>
     <string name="one_more_click_exit">주의 : 한 번 더 누르면 나가집니다!</string>
+    <string name="upper_exit">나가기</string>
 </resources>

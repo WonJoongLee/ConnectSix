@@ -22,6 +22,9 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 //TODO 당장 해야 할 것
+//TODO 누가 먼저 시작하는 것인지 알려주는 UI가 필요해보임
+//TODO user_left toast message가 1. 상대방이 나갔을 때, 2. 내가 나갔을 때 두 번 뜨는 것에 대한 오류 해결
+// => TwoPlayer~.kt에서 user_left ctrl+f로 검색해서 찾은 후 그 부분 조건문 고치면 됨. 1079번 째 줄 조건 고치기
 
 //TODO 추후에 해야 할 것
 //TODO 게임 끝나면 판정화면 만들고 바둑판 초기화시키기
@@ -268,7 +271,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 else if (isRoomAvailable(roomNum)) { // 만약 방이 없으면, 즉 isRoomAvailable이 true이므로 방 생성 가능하다.
-                    if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "0000".toInt()) { // roomNum은 0000부터 9999 사이여야 한다.
+                    if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "1000".toInt()) { // roomNum은 1000부터 9999 사이여야 한다.
                         database.push().setValue(Room(roomNum, newNickname, "", "1"))
                         database.addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
