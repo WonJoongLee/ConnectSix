@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -75,6 +76,7 @@ class TwoplayerGameboard : AppCompatActivity() {
     var isUserExit = false // 플레이어가 dialog에서 exit을 누르면 게임 보드 화면에서 나가는 것이므로 이 때 true로 바꿔줍니다.
     // 이 변수가 필요한 이유는, 이 변수를 사용하지 않으면 dialog가 두 번 띄워지는 오류가 발생합니다.
 
+    var toastDone = false
 
 //    var am: ActivityManager= applicationContext .getSystemService(ACTIVITY_SERVICE) as ActivityManager
 //    var tasks : List<ActivityManager.RunningTaskInfo> = am.getRunningTasks(1) // TODO deprecated 되는 것 체크
@@ -263,6 +265,71 @@ class TwoplayerGameboard : AppCompatActivity() {
         })
 
 
+//        when(turnNum%4){
+//            1,4->{
+//                user1Turn.visibility = View.VISIBLE
+//                user2Turn.visibility = View.INVISIBLE
+//            }
+//            2,3->{
+//                user1Turn.visibility = View.INVISIBLE
+//                user2Turn.visibility = View.VISIBLE
+//            }
+//        }
+
+//        if (serverUser1Name && turnNum == 1) {
+//            user1Turn.visibility = View.VISIBLE
+//            user2Turn.visibility = View.INVISIBLE
+//        }
+
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (serverUser1Name) {
+                    when (turnNum % 4) {
+                        1, 0 -> {
+                            user1Turn.visibility = View.VISIBLE
+                            user2Turn.visibility = View.INVISIBLE
+                            playerTurn = 1
+                            disableClick(playerTurn)
+                        }
+                        3, 2 -> {
+                            user1Turn.visibility = View.INVISIBLE
+                            user2Turn.visibility = View.VISIBLE
+                            playerTurn = 2
+                            disableClick(playerTurn)
+                        }
+                    }
+                } else {
+                    when (turnNum % 4) {
+                        1, 0 -> {
+                            user1Turn.visibility = View.INVISIBLE
+                            user2Turn.visibility = View.VISIBLE
+                            playerTurn = 1
+                            disableClick(playerTurn)
+                        }
+                        2, 3 -> {
+                            user1Turn.visibility = View.VISIBLE
+                            user2Turn.visibility = View.INVISIBLE
+                            playerTurn = 2
+                            disableClick(playerTurn)
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+
+        /*
+        database.addChildEventListener(object:ChildEventListener{
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                Log.e("DB turnNum", snapshot.toString())
+            }
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) { }
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) { }
+            override fun onCancelled(error: DatabaseError) { }
+        })*/
+
         //데이터의 변화가 있을 때, 즉 상대방이 돌을 두면 DB 변화를 감지해서 내 화면에 변경된 점을 뿌려주는 부분
         database.child("stones").addChildEventListener(object : ChildEventListener {
             @SuppressLint("ResourceAsColor")
@@ -331,6 +398,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                             )
                         )
                         turnNumTextView.setBackgroundResource(R.drawable.turn_number_black)
+
                     }
                     2, 3 -> { // 2,3이면 player 2 차례다
                         turnNumTextView.text = turnNum.toString()
@@ -341,15 +409,47 @@ class TwoplayerGameboard : AppCompatActivity() {
                             )
                         )
                         turnNumTextView.setBackgroundResource(R.drawable.turn_number_white)
+
                     }
                 }
+
+//                if (turnNum != 1 && turnNum != 2) {
+//                    Log.e("serveruser1Name", serverUser1Name.toString())
+//                    if (!serverUser1Name) {
+//                        when (turnNum % 4) {
+//                            2, 1 -> {
+//                                Log.e("1", "$turnNum")
+//                                user1Turn.visibility = View.VISIBLE
+//                                user2Turn.visibility = View.INVISIBLE
+//                            }
+//                            3, 0 -> {
+//                                Log.e("2", "$turnNum")
+//                                user1Turn.visibility = View.INVISIBLE
+//                                user2Turn.visibility = View.VISIBLE
+//                            }
+//                        }
+//                    } else {
+//                        when (turnNum % 4) {
+//                            2, 1 -> {
+//                                Log.e("3", "$turnNum")
+//                                user1Turn.visibility = View.INVISIBLE
+//                                user2Turn.visibility = View.VISIBLE
+//                            }
+//                            3, 0 -> {
+//                                Log.e("4", "$turnNum")
+//                                user1Turn.visibility = View.VISIBLE
+//                                user2Turn.visibility = View.INVISIBLE
+//                            }
+//                        }
+//                    }
+//                }
 
                 soundPool.play(soundID, 1f, 1f, 0, 0, 1f);    // 돌 두는 소리가 나는 부분입니다
                 turnNum++ // 한 턴이 진행되었음을 의미. 중요한 부분
 
                 database.child("turnNum").setValue(turnNum.toString())
 
-                controlClickable()
+                //controlClickable()
                 judgeVictory(database)
             }
 
@@ -480,6 +580,22 @@ class TwoplayerGameboard : AppCompatActivity() {
                 }
             }
         }
+
+//        if(serverUser1Name){
+//            user1Turn.visibility = View.INVISIBLE
+//            user2Turn.visibility = View.VISIBLE
+//        }
+
+
+//        if (turnNum == 1 && serverUser1Name) {
+//            Log.e("turnNumnotinDB", turnNum.toString())
+//            user1Turn.visibility = View.INVISIBLE
+//            user2Turn.visibility = View.VISIBLE
+//        } else if (turnNum == 1) {
+//            Log.e("turnNumnotinDB", turnNum.toString())
+//            user1Turn.visibility = View.VISIBLE
+//            user2Turn.visibility = View.INVISIBLE
+//        }
     }
 
     private fun changeStoneDependSize(i: Int, j: Int) {
@@ -537,12 +653,12 @@ class TwoplayerGameboard : AppCompatActivity() {
     fun controlClickable() {
         when (turnNum % 4) {
             1, 0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
-                playerTurn = 1
-                disableClick(playerTurn)
+//                playerTurn = 1
+//                disableClick(playerTurn)
             }
             2, 3 -> { // 2,3이면 player 2 차례다
-                playerTurn = 2
-                disableClick(playerTurn)
+//                playerTurn = 2
+//                disableClick(playerTurn)
             }
         }
     }
@@ -1075,30 +1191,47 @@ class TwoplayerGameboard : AppCompatActivity() {
                     ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        if (!isUserExit) showDialog(database, myNickName)
-                        if(i.value.toString() != myNickName){
-                            Log.e("Toast", "myNickName : $myNickName, ivalueString : ${i.value.toString()}")
+                        if (!toastDone) {
                             Toast.makeText(
                                 applicationContext,
                                 getString(R.string.user_left),
                                 Toast.LENGTH_SHORT
                             ).show()
+                            toastDone = true
                         }
+//                        for (j in snapshot.children) {
+//                            Log.e(
+//                                "Toast",
+//                                "myNickName : $myNickName, ivalueString : ${j.value.toString()}"
+//                            )
+//                            if (j.key.equals("player2Id") && j.value.toString() != myNickName) {
+//                                Toast.makeText(
+//                                    applicationContext,
+//                                    getString(R.string.user_left),
+//                                    Toast.LENGTH_SHORT
+//                                ).show()
+//                            }
+//                        }
+                        if (!isUserExit) showDialog(database, myNickName)
                     } else if (i.key.equals("player2Id") && i.value.toString()
-                            .isEmpty() && turnNum > 2
+                            .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
                     ) { // player2가 나갔을 때, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
+                        Log.e(
+                            "Name",
+                            "myNickName = $myNickName, ivalueName = ${i.value.toString()}"
+                        )
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        if (!isUserExit) showDialog(database, myNickName)
-                        println("turnNUM!!!! : $turnNum")
-                        if(i.value.toString() != myNickName){
-                            Log.e("Toast", "myNickName : $myNickName, ivalueString : ${i.value.toString()}")
+                        if (!toastDone) {
                             Toast.makeText(
                                 applicationContext,
                                 getString(R.string.user_left),
                                 Toast.LENGTH_SHORT
                             ).show()
+                            toastDone = true
                         }
+                        if (!isUserExit) showDialog(database, myNickName)
+                        println("turnNUM!!!! : $turnNum")
                     }
 
                 } // 이 for문의 조건문에 맞는 항목이 없다면 방에 사람이 없다는 뜻이므로 아래에서 user1과 user1 tv위치에 값들을 설정해줍니다.
@@ -1572,8 +1705,6 @@ class TwoplayerGameboard : AppCompatActivity() {
             })
 
             builder.setView(loseDialogView)
-                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
-                //}
                 .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
                     isUserExit = true
                     exitProcess(database)
@@ -1634,7 +1765,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                 finish()
             }else{
                       */
-                showDialog(database, enemyName)
+            showDialog(database, enemyName)
             //}
             //exitProcess(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
         }

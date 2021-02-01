@@ -22,15 +22,15 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 //TODO 당장 해야 할 것
-//TODO 누가 먼저 시작하는 것인지 알려주는 UI가 필요해보임
-//TODO user_left toast message가 1. 상대방이 나갔을 때, 2. 내가 나갔을 때 두 번 뜨는 것에 대한 오류 해결
-// => TwoPlayer~.kt에서 user_left ctrl+f로 검색해서 찾은 후 그 부분 조건문 고치면 됨. 1079번 째 줄 조건 고치기
 
 //TODO 추후에 해야 할 것
 //TODO 게임 끝나면 판정화면 만들고 바둑판 초기화시키기
 //TODO 바둑판 초기화버튼 만들기
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE 누가 먼저 시작하는 것인지 알려주는 UI가 필요해보임
+// DONE user_left toast message가 1. 상대방이 나갔을 때, 2. 내가 나갔을 때 두 번 뜨는 것에 대한 오류 해결
+// => TwoPlayer~.kt에서 user_left ctrl+f로 검색해서 찾은 후 그 부분 조건문 고치면 됨. 1079번 째 줄 조건 고치기
 // DONE 이겨서 다시 메인 액티비티로 돌아온 후 방을 들어가면 winLoseRatio가 바뀌지 않는 에러 해결해야 함
 // DONE 플레이어(본인)가 나갈 때 Dialog가 두 번 띄워지는 에러 해결(isUserExit변수를 통해서 해결)
 // DONE 유저 나갔을 때 나갔다고 Toast message 띄워줄 것 + 승리 화면(dialog) 띄워주는 것
