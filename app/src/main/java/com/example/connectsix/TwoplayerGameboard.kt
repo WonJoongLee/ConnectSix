@@ -1,10 +1,8 @@
 package com.example.connectsix
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
@@ -24,6 +22,7 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 
@@ -128,6 +127,17 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
          */
 
+        database.child("player1Id").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                println("@@@@여기로 들어옴!!")
+                if (snapshot.value == "") {
+                    Log.e("USER", "LEFT")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+
 
         val userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
         userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -149,6 +159,7 @@ class TwoplayerGameboard : AppCompatActivity() {
             }
 
         })
+
 
         println(roomKey)
 
@@ -216,7 +227,6 @@ class TwoplayerGameboard : AppCompatActivity() {
 
                 } else if (snapshot.value.toString().isEmpty()) { // User가 나갔을 경우
                     user1Nickname.text = findViewById(R.string.waiting)
-
                 }
             }
 
@@ -244,9 +254,11 @@ class TwoplayerGameboard : AppCompatActivity() {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 if (snapshot.value.toString().isNotEmpty()) { // User가 들어왔을 경우
                     user2Nickname.text = snapshot.value.toString()
+                    Log.e("User2", "ENTER")
                 } else if (snapshot.value.toString().isEmpty()) { // User가 나갔을 경우
                     user2Nickname.text = findViewById(R.string.waiting)
                     user2Record.text = findViewById(R.string.waiting)
+                    Log.e("User2", "LEFT")
                 }
             }
 
@@ -1152,8 +1164,6 @@ class TwoplayerGameboard : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (i in snapshot.children) {
                     tempCnt++
-                    //println("##### tempCnt : $tempCnt")
-                    //println("##### $nameFinished ${i.key.equals("player1Id")} ${i.value.toString().isNotEmpty()} ")
                     if (i.key.equals("player1Id") && i.value.toString()
                             .isNotEmpty() && !nameFinished && !isPlayer1Name && (i.value.toString() != myNickName)
                     ) { // player1Id가 존재한다면
@@ -1191,27 +1201,16 @@ class TwoplayerGameboard : AppCompatActivity() {
                     ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        if (!toastDone) {
+                        println("string : ${i.value.toString()}")
+                        if (!toastDone && player1Name != myNickName) {
                             Toast.makeText(
                                 applicationContext,
                                 getString(R.string.user_left),
                                 Toast.LENGTH_SHORT
                             ).show()
-                            toastDone = true
+                            //toastDone = true
                         }
-//                        for (j in snapshot.children) {
-//                            Log.e(
-//                                "Toast",
-//                                "myNickName : $myNickName, ivalueString : ${j.value.toString()}"
-//                            )
-//                            if (j.key.equals("player2Id") && j.value.toString() != myNickName) {
-//                                Toast.makeText(
-//                                    applicationContext,
-//                                    getString(R.string.user_left),
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
-//                            }
-//                        }
+                        toastDone = true
                         if (!isUserExit) showDialog(database, myNickName)
                     } else if (i.key.equals("player2Id") && i.value.toString()
                             .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
@@ -1222,14 +1221,16 @@ class TwoplayerGameboard : AppCompatActivity() {
                         )
                         user2Nickname.text = "Waiting..."
                         user2Record.text = findViewById(R.string.waiting)
-                        if (!toastDone) {
+
+                        if (!toastDone && player2Name != myNickName) {
                             Toast.makeText(
                                 applicationContext,
                                 getString(R.string.user_left),
                                 Toast.LENGTH_SHORT
                             ).show()
-                            toastDone = true
+                            //toastDone = true
                         }
+                        toastDone = true
                         if (!isUserExit) showDialog(database, myNickName)
                         println("turnNUM!!!! : $turnNum")
                     }
@@ -1728,14 +1729,10 @@ class TwoplayerGameboard : AppCompatActivity() {
             database.updateChildren(updateUserName)//Firebase에 업데이트
         }
 
-        //database.child("turnNum").setValue(1.toString()) // 이부분도 마찬가지로 beta때만 있으면 될듯, 어차피 방이 없어지면 다 삭제 되니..
-        //database.child("stones").removeValue() // 적혀져있던 돌들 삭제하는 부분, 베타Beta일 때만 이렇게 두고 실제로 게임 오픈하면 방 자체를 삭제해야 하나.. 고민해보자
-
-        database.removeValue() // 마지막으로 데이터베이스 항목 자체를 삭제합니다.
-        //Toast.makeText(this, "이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
+        val roomDatabase = FirebaseDatabase.getInstance().reference.child("roomId").child(roomKey)
+        database.removeValue()
         finish()
     }
-
 
     var backKeyPressedTime: Long = 0 // 뒤로가기 버튼 클릭 시간 확인을 위한 변수
 
@@ -1751,32 +1748,18 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
 
         if (System.currentTimeMillis() <= backKeyPressedTime + 2500) { // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
-            /*
-            if(turnNum<=2){ // 한 번 둔 것이기 때문에 패배 처리를 하지 않고 그냥 종료
-                if (serverUser1Name) { // 서버의 player1Id에 내 닉네임이 저장되어 있다면
-                    val updateUserName = mutableMapOf<String, Any>()
-                    updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
-                    database.updateChildren(updateUserName)//Firebase에 업데이트
-                } else if (serverUser2Name) {
-                    val updateUserName = mutableMapOf<String, Any>()
-                    updateUserName["player2Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
-                    database.updateChildren(updateUserName)//Firebase에 업데이트
-                }
+            println("text : ${user2Nickname.text}, waiting = waiting...")
+            if(user2Nickname.text == "Waiting…"){ // 상대방이 아직 안들어왔는데 그냥 나가려고 시도할 때 패배 dialog를 보여주지 않고 그냥 종료.
                 finish()
             }else{
-                      */
-            showDialog(database, enemyName)
-            //}
-            //exitProcess(database) // 값들을 초기화하고 원래 화면으로 돌아가는 코드 작성
+                showDialog(database, enemyName)
+            }
         }
     }
 
     fun updateUserRatio(userNickName: String) {
         var database = FirebaseDatabase.getInstance().reference.child("Users")
         var ratio = ""
-
-
-        println("@@@@@@@ $ratio")//확인하는부분입니다
 
         database.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

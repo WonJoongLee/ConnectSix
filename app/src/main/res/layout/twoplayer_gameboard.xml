@@ -110,21 +110,26 @@
         app:layout_constraintBottom_toTopOf="@id/user1Layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/user2Layout">
+        app:layout_constraintTop_toBottomOf="@id/user2Layout"
+        android:foregroundGravity="center"
+        >
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:scrollbars="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            >
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="horizontal">
+                android:scrollbars="horizontal"
+                >
 
                 <GridLayout
                     android:layout_width="wrap_content"
@@ -132,7 +137,8 @@
                     android:layout_gravity="fill"
                     android:columnCount="19"
                     android:orientation="horizontal"
-                    android:rowCount="19">
+                    android:rowCount="19"
+                    >
 
                     <!--0행-->
                     <ImageButton

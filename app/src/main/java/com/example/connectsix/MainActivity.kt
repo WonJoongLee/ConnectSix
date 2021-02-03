@@ -28,7 +28,12 @@ import kotlin.coroutines.suspendCoroutine
 //TODO 바둑판 초기화버튼 만들기
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
-// DONE 누가 먼저 시작하는 것인지 알려주는 UI가 필요해보임
+// DONE 사용자가 몇 수 두지 않고 나갔을 때 처리, TwoPlayerGameBoard.kt의 282번째 줄에서 수정하면 될 듯하다.
+//     여기서 turnNum이 높지 않을 때 나가면 그냥 무효게임으로 처리하는 방식. (이렇게 할 지 한 번 고민도 해봐야 할 듯 함)
+//     -> 상대편 사용자가 들어오면 게임을 시작한 것으로 간주, 왜냐하면 방 번호를 알고 들어온 이상 같이 게임을 하기로 작정하고 들어온 것이기 때문에 시작한 것으로 봐도 무방.
+// DONE 사용자가 나가면 Toast Message 에러나는 것 수정
+// DONE board가 축소하면 상단에 붙어있던 것을, 가운데에 위치하도록 xml을 수정하였음.
+// DONE 누가 먼저 시작하는 것인지 알려주는 UI가 필요해보임 -> 추가 완료
 // DONE user_left toast message가 1. 상대방이 나갔을 때, 2. 내가 나갔을 때 두 번 뜨는 것에 대한 오류 해결
 // => TwoPlayer~.kt에서 user_left ctrl+f로 검색해서 찾은 후 그 부분 조건문 고치면 됨. 1079번 째 줄 조건 고치기
 // DONE 이겨서 다시 메인 액티비티로 돌아온 후 방을 들어가면 winLoseRatio가 바뀌지 않는 에러 해결해야 함
@@ -224,8 +229,13 @@ class MainActivity : AppCompatActivity() {
                             SharedData.prefs.setName("nickName", newNickname)
                             // 새로운 이름 추가시 sharedData에 이름과 초기화된 전적을 추가합니다.
 
+                            println(Locale.getDefault().language.toString())
+                            if(Locale.getDefault().language.toString() == "ko"){
+                                welcomeSign.text = "${newNickname}님!\n돌아오신 것을 환영합니다:)"
+                            }else{
+                                welcomeSign.text = "Welcome back, $newNickname :)"
+                            }
 
-                            welcomeSign.text = "Welcome, $newNickname :)\nNew Life isn't it great?"
                             welcomeSign.visibility = VISIBLE
                             changeNickname.visibility = VISIBLE
                         } else { // 이미 사용되고 있는 닉네임임을 알려줍니다.
