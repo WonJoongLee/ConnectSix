@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
@@ -22,7 +23,6 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 //TODO 당장 해야 할 것
-
 
 //TODO 추후에 해야 할 것
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
@@ -91,7 +91,8 @@ class MainActivity : AppCompatActivity() {
                     //var updateUserName = mutableMapOf<String, Any>()
                     //updateUserName["userName"] = newNickname // Firebase에 update할 값 준비
                     //FirebaseDatabase.getInstance().reference.updateChildren(updateUserName)//Firebase에 설정한 이름 탑재
-                    Toast.makeText(this, getString(R.string.login_success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.login_success), Toast.LENGTH_SHORT)
+                        .show()
 
                     FirebaseDatabase.getInstance().reference.child("Users").push()
                         .setValue(User(newNickname, "0", "0", "0%"))
@@ -130,10 +131,12 @@ class MainActivity : AppCompatActivity() {
 
             //SharedData.prefs.setName("nickName", newNickname) 이 부분은 없어도 될 것 같음. 왜 새로 닉네임을 설정해야 하는지?
 
-            if(Locale.getDefault().language.toString() == "ko"){ // 기본 언어가 한국어인 device에 대한 처리
-                welcomeSign.text = "${newNickname}님, ${getString(R.string.welcome_back)}:)\n${getString(R.string.have_a_great_day)}"
-            }else{
-                welcomeSign.text = "${getString(R.string.welcome_back)}$newNickname :)\n${getString(R.string.have_a_great_day)}"
+            if (Locale.getDefault().language.toString() == "ko") { // 기본 언어가 한국어인 device에 대한 처리
+                welcomeSign.text =
+                    "${newNickname}님, ${getString(R.string.welcome_back)}:)\n${getString(R.string.have_a_great_day)}"
+            } else {
+                welcomeSign.text =
+                    "${getString(R.string.welcome_back)}$newNickname :)\n${getString(R.string.have_a_great_day)}"
             }
 
             //welcomeSign.text = "${getString(R.string.welcome_back)}$newNickname :)\n${getString(R.string.have_a_great_day)}"
@@ -233,9 +236,9 @@ class MainActivity : AppCompatActivity() {
                             // 새로운 이름 추가시 sharedData에 이름과 초기화된 전적을 추가합니다.
 
                             println(Locale.getDefault().language.toString())
-                            if(Locale.getDefault().language.toString() == "ko"){
+                            if (Locale.getDefault().language.toString() == "ko") {
                                 welcomeSign.text = "${newNickname}님!\n돌아오신 것을 환영합니다:)"
-                            }else{
+                            } else {
                                 welcomeSign.text = "Welcome back, $newNickname :)"
                             }
 
@@ -273,7 +276,7 @@ class MainActivity : AppCompatActivity() {
             roomNum = roomNumberEdittext.text.toString()
 
             GlobalScope.launch {
-                if(roomNum.isEmpty()){
+                if (roomNum.isEmpty()) {
                     runOnUiThread {
                         Toast.makeText(
                             applicationContext,
@@ -282,8 +285,13 @@ class MainActivity : AppCompatActivity() {
                         )
                             .show()
                     }
-                }
-                else if (isRoomAvailable(roomNum)) { // 만약 방이 없으면, 즉 isRoomAvailable이 true이므로 방 생성 가능하다.
+                } else if (setNickName.visibility == VISIBLE) {
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, R.string.plz_set_nick, Toast.LENGTH_SHORT)
+                            .show()
+                    }
+
+                } else if (isRoomAvailable(roomNum)) { // 만약 방이 없으면, 즉 isRoomAvailable이 true이므로 방 생성 가능하다.
                     if (roomNum.toInt() <= "9999".toInt() && roomNum.toInt() >= "1000".toInt()) { // roomNum은 1000부터 9999 사이여야 한다.
                         database.push().setValue(Room(roomNum, newNickname, "", "1"))
                         database.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -373,7 +381,13 @@ class MainActivity : AppCompatActivity() {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             for (index in snapshot.children) {
                                 val serverRoomNum = index.child("roomId").value.toString()
-                                if (serverRoomNum == roomNum) { // 같은 roomNum을 찾으면
+                                if (setNickName.visibility == VISIBLE) { // 만약 닉네임을 입력하지 않았다면 닉네임을 입력하라고 토스트해준다.
+                                    runOnUiThread {
+                                        Toast.makeText(applicationContext, R.string.plz_set_nick, Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                                }
+                                else if (serverRoomNum == roomNum) { // 같은 roomNum을 찾으면
                                     isExistRoom = true
                                     intent.putExtra(
                                         "player1NickName",
