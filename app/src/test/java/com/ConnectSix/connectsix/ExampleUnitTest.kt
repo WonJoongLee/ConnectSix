@@ -1,4 +1,4 @@
-package com.example.connectsix
+package com.ConnectSix.connectsix
 
 import org.junit.Test
 

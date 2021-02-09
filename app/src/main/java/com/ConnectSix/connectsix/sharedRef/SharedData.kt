@@ -1,4 +1,4 @@
-package com.example.connectsix.sharedRef
+package com.ConnectSix.connectsix.sharedRef
 
 import android.app.Application
 

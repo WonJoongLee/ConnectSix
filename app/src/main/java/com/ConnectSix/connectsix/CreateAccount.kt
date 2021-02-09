@@ -1,4 +1,4 @@
-package com.example.connectsix
+package com.ConnectSix.connectsix
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
