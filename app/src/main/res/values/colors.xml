@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00FF0000</color>
     <color name="crimsonRed">#DC143C</color>
+    <color name="dimGray">#696969</color>
+    <color name="darkGray">#121212</color>
 </resources>

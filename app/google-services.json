@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "118395993819",
+    "firebase_url": "https://connectsix-eedc0-default-rtdb.firebaseio.com",
+    "project_id": "connectsix-eedc0",
+    "storage_bucket": "connectsix-eedc0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118395993819:android:6b24b4149518506d4696fe",
+        "android_client_info": {
+          "package_name": "com.connectsix.connectsix"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118395993819-hgojkt7tc4v7emqq6h9h1jgh71iaj5jo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeIw7I2K-6gvSBS8PFjIPbRWR7cgUdJNI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118395993819-hgojkt7tc4v7emqq6h9h1jgh71iaj5jo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

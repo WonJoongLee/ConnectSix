@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Service
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
@@ -90,6 +91,17 @@ class TwoplayerGameboard : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.twoplayer_gameboard)
         startService(Intent(this, UnCatchTaskService::class.java))
+
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                user1Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
+                user2Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
+            }
+            Configuration.UI_MODE_NIGHT_YES->{
+                user1Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
+                user2Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
+            }
+        }
 
         var soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
         var soundID = soundPool.load(this, R.raw.sound_stone, 1)

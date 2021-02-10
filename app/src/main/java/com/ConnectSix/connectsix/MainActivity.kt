@@ -2,26 +2,33 @@ package com.ConnectSix.connectsix
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.content.res.Configuration
+import android.graphics.PorterDuff
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.ConnectSix.connectsix.sharedRef.SharedData
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 import kotlinx.coroutines.*
-import java.lang.Runnable
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+
 //TODO 당장 해야 할 것
+//TODO Dark Mode 지원 - 대기 페이지와 게임 페이지 모두 수정하기
 
 //TODO 추후에 해야 할 것
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
@@ -65,15 +72,111 @@ class MainActivity : AppCompatActivity() {
     var winLoseRatio = ""
     var roomNum = ""
 
-    @SuppressLint("ShowToast", "SetTextI18n")
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    @SuppressLint("ShowToast", "SetTextI18n", "ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                mainConstraintLayout.setBackgroundColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                mainTextView.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
+                firstStone.setImageResource(R.drawable.black_circle_main)
+                secondStone.setImageResource(R.drawable.black_circle_main)
+                thirdStone.setImageResource(R.drawable.black_circle_main)
+                fourthStone.setImageResource(R.drawable.black_circle_main)
+                fifthStone.setImageResource(R.drawable.black_circle_main)
+                lastStone.setImageResource(R.drawable.white_circle_main)
+                createGameButton.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                joinGameButton.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                enterButton.setImageResource(R.drawable.enter)
+                setNickName.highlightColor = ContextCompat.getColor(
+                    applicationContext,
+                    R.color.black
+                )
+                setNickName.background.setColorFilter(
+                    ContextCompat.getColor(this, R.color.black),
+                    PorterDuff.Mode.SRC_ATOP
+                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // EditText Cursor 색 설정, Dark Mode가 아닐 때는 바탕이 흰색이기 때문에 검은색으로 설정해준다.
+                    setNickName.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_black)
+                    roomNumberEdittext.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_black)
+                }
+                setNickName.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.black)
+                roomNumberEdittext.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.black)
+                welcomeSign.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
+            }
+
+
+            Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                mainConstraintLayout.setBackgroundColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.darkGray
+                    )
+                )
+                mainTextView.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
+                firstStone.setImageResource(R.drawable.white_circle_main)
+                secondStone.setImageResource(R.drawable.white_circle_main)
+                thirdStone.setImageResource(R.drawable.white_circle_main)
+                fourthStone.setImageResource(R.drawable.white_circle_main)
+                fifthStone.setImageResource(R.drawable.white_circle_main)
+                lastStone.setImageResource(R.drawable.black_circle_main_with_white_edge)
+                createGameButton.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                joinGameButton.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                enterButton.setImageResource(R.drawable.enter_black)
+                setNickName.highlightColor = ContextCompat.getColor(
+                    applicationContext,
+                    R.color.white
+                )
+                setNickName.background.setColorFilter(
+                    ContextCompat.getColor(this, R.color.white),
+                    PorterDuff.Mode.SRC_ATOP
+                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // EditText Cursor 색 설정, Dark Mode일 때는 바탕이 검은색이기 때문에 흰색으로 설정해준다.
+                    setNickName.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_white)
+                    roomNumberEdittext.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_white)
+                }
+                setNickName.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.white)
+                roomNumberEdittext.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.white)
+                welcomeSign.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
+            }
+        }
+
         val intent = Intent(this, TwoplayerGameboard::class.java)
 
-        var newNickname: String = ""
+        var newNickname = ""
         var pastNickName = ""
+
+        setNickName.setOnKeyListener { _, keyCode, event -> (event!!.action == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER) } // EditText에서 엔터 키 눌렀을 시 아무 동작도 하지 않도록 설정, 줄바꿀 일이 필요 없기 때문에
+        roomNumberEdittext.setOnKeyListener { _, keyCode, event -> (event!!.action == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER) } // EditText에서 엔터 키 눌렀을 시 아무 동작도 하지 않도록 설정, 줄바꿀 일이 필요 없기 때문에
 
         if (SharedData.prefs.getName("nickName", "")
                 .isEmpty()
@@ -286,7 +389,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 } else if (setNickName.visibility == VISIBLE) {
                     runOnUiThread {
-                        Toast.makeText(applicationContext, R.string.plz_set_nick, Toast.LENGTH_SHORT)
+                        Toast.makeText(
+                            applicationContext,
+                            R.string.plz_set_nick,
+                            Toast.LENGTH_SHORT
+                        )
                             .show()
                     }
 
@@ -382,11 +489,14 @@ class MainActivity : AppCompatActivity() {
                                 val serverRoomNum = index.child("roomId").value.toString()
                                 if (setNickName.visibility == VISIBLE) { // 만약 닉네임을 입력하지 않았다면 닉네임을 입력하라고 토스트해준다.
                                     runOnUiThread {
-                                        Toast.makeText(applicationContext, R.string.plz_set_nick, Toast.LENGTH_SHORT)
+                                        Toast.makeText(
+                                            applicationContext,
+                                            R.string.plz_set_nick,
+                                            Toast.LENGTH_SHORT
+                                        )
                                             .show()
                                     }
-                                }
-                                else if (serverRoomNum == roomNum) { // 같은 roomNum을 찾으면
+                                } else if (serverRoomNum == roomNum) { // 같은 roomNum을 찾으면
                                     isExistRoom = true
                                     intent.putExtra(
                                         "player1NickName",

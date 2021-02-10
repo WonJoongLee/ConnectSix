@@ -10,8 +10,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ConnectSix"
         android:name="com.ConnectSix.connectsix.sharedRef.SharedData">
-        <activity android:name="com.ConnectSix.connectsix.TwoplayerGameboard"/>
-        <activity android:name="com.ConnectSix.connectsix.MainActivity">
+        <activity android:name="com.ConnectSix.connectsix.TwoplayerGameboard"
+            />
+        <activity android:name="com.ConnectSix.connectsix.MainActivity"
+            android:configChanges="uiMode">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

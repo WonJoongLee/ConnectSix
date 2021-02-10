@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainConstraintLayout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -31,36 +32,42 @@
         app:layout_constraintTop_toBottomOf="@id/mainTextView">
 
         <ImageView
+            android:id="@+id/firstStone"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_marginEnd="10dp"
             android:src="@drawable/black_circle_main" />
 
         <ImageView
+            android:id="@+id/secondStone"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_marginEnd="10dp"
             android:src="@drawable/black_circle_main" />
 
         <ImageView
+            android:id="@+id/thirdStone"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_marginEnd="10dp"
             android:src="@drawable/black_circle_main" />
 
         <ImageView
+            android:id="@+id/fourthStone"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_marginEnd="10dp"
             android:src="@drawable/black_circle_main" />
 
         <ImageView
+            android:id="@+id/fifthStone"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_marginEnd="10dp"
             android:src="@drawable/black_circle_main" />
 
         <ImageView
+            android:id="@+id/lastStone"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:src="@drawable/white_circle_main" />
@@ -84,7 +91,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="5"
-            android:hint="@string/nickname" />
+            android:hint="@string/nickname"
+            android:textCursorDrawable="@drawable/cursor_drawable_black"/>
 
         <ImageButton
             android:id="@+id/enterButton"
@@ -147,7 +155,8 @@
         app:layout_constraintBottom_toTopOf="@id/createGameButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/randomGameStartButton" />
+        app:layout_constraintTop_toBottomOf="@id/randomGameStartButton"
+        android:textCursorDrawable="@drawable/cursor_drawable_black"/>
 
     <Button
         android:id="@+id/createGameButton"
