@@ -28,11 +28,12 @@ import kotlin.coroutines.suspendCoroutine
 
 
 //TODO 당장 해야 할 것
-//TODO Dark Mode 지원 - 대기 페이지와 게임 페이지 모두 수정하기
+
 
 //TODO 추후에 해야 할 것
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE Dark Mode 지원 - 대기 페이지와 게임 페이지 모두 수정하기
 // DONE 두 명이 들어와있는 상태에서 한 명이 나가면 어떻게 할 지 정해야 한다.
 // DONE 게임 끝나고 서버에서 방이 없어지지 않는 오류 해결
 // DONE 게임 끝나면 판정화면 만들고 바둑판 초기화시키기

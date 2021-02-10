@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.text.Html
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
@@ -94,12 +95,32 @@ class TwoplayerGameboard : AppCompatActivity() {
 
         when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
-                user1Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
-                user2Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
+                user1Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.black
+                    )
+                )
+                user2Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.black
+                    )
+                )
             }
-            Configuration.UI_MODE_NIGHT_YES->{
-                user1Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
-                user2Nickname.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
+            Configuration.UI_MODE_NIGHT_YES -> {
+                user1Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                user2Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
             }
         }
 
@@ -1043,7 +1064,11 @@ class TwoplayerGameboard : AppCompatActivity() {
                             .isNotEmpty() && !nameFinished && (i.value.toString() != myNickName) && !isPlayer1Name
                     ) { // player1Id가 존재한다면
                         isGameStart = true // 상대방이 들어온 시점을 기준으로 게임 시작처리를 합니다.
-                        Toast.makeText(applicationContext, getString(R.string.game_start), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            applicationContext,
+                            getString(R.string.game_start),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         player1Name = i.value.toString()
                         player2Name = myNickName // 서버에서는 player2에 내 이름이 저장됩니다.
                         nameFinished = true
@@ -1060,7 +1085,11 @@ class TwoplayerGameboard : AppCompatActivity() {
                             .isNotEmpty() && !nameFinished && !isPlayer2Name
                     ) { // player2Id에 이미 누가 있을 경우
                         isGameStart = true // 상대방이 들어온 시점을 기준으로 게임 시작처리를 합니다.
-                        Toast.makeText(applicationContext, getString(R.string.game_start), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            applicationContext,
+                            getString(R.string.game_start),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         player1Name = myNickName
                         player2Name = i.value.toString()
                         nameFinished = true
@@ -1538,28 +1567,74 @@ class TwoplayerGameboard : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("InflateParams")
     private fun showDialog(database: DatabaseReference, winnerStr: String) {
 
         val builder = AlertDialog.Builder(this)
-        val winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
-        val loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+        var winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+        var loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+                loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+            }
+            Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                winDialogView = layoutInflater.inflate(R.layout.dialog_win_night, null)
+                loseDialogView = layoutInflater.inflate(R.layout.dialog_lose_night, null)
+            }
+        }
+
 
         val userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
 
         println("### winnerStr : $winnerStr, myNickName : $myNickName")
 
         if (myNickName == winnerStr && (!this.isFinishing)) { // 만약 승리했다면,
-            builder.setView(winDialogView)
-                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
-                //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
-                //}
-                .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
-                    isUserExit = true
-                    exitProcess(database)
+            //winDialogView.
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                    builder.setView(winDialogView)
+                        //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                        //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+                        //}
+                        .setNegativeButton(
+                            Html.fromHtml("<font color='#FFFFFF'>${R.string.upper_exit}</font>")
+                                .toString()
+                        ) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            //.setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
                 }
-                .setCancelable(false)
-                .show()
-                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+                Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                    builder.setView(winDialogView)
+                        //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                        //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+                        //}
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                }
+            }
+//            builder.setView(winDialogView)
+//                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+//                //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+//                //}
+//                .setNegativeButton(Html.fromHtml("<font color='#FF7F27'>${R.string.upper_exit}</font>").toString()) { _, _ -> // EXIT 누르면 MainActivity로 이동
+//                //.setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+//                    isUserExit = true
+//                    exitProcess(database)
+//                }
+//                .setCancelable(false)
+//                .show()
+//                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
 
 
             //이겼을 때 win 값 setValue해주고, ratio값을 업데이트해줍니다.
@@ -1618,14 +1693,29 @@ class TwoplayerGameboard : AppCompatActivity() {
 
             })
 
-            builder.setView(loseDialogView)
-                .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
-                    isUserExit = true
-                    exitProcess(database)
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                    builder.setView(loseDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
                 }
-                .setCancelable(false)
-                .show()
-                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+                Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                    builder.setView(loseDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                }
+            }
+
 
 
         }
