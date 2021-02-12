@@ -1,15 +1,10 @@
-package com.ConnectSix.connectsix
-
-/**
- * 이 파일은 백업 파일로 혹시 TwoplayerGameboard.kt가 문제가 있을 때
- * 대신 사용하기 위함.
- * 2021-02-06, 23:45분 저장
- */
+package com.connectsix.connectsix
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Service
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
@@ -17,13 +12,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.text.Html
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.ConnectSix.connectsix.sharedRef.SharedData
+import com.connectsix.connectsix.sharedRef.SharedData
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 import kotlinx.coroutines.GlobalScope
@@ -36,12 +32,12 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
 
     var clickCnt = 64 // 초기 확대 값(default 값)은 53
 
-    var player1Name: String = ""
-    var player2Name: String = ""
-    var myNickName: String = ""
-    var enemyName: String = ""
+    var player1Name: String = "" // 서버에서 player1 name
+    var player2Name: String = "" // 서버에서 player2 name
+    var myNickName: String = "" // 내 닉네임
+    var enemyName: String = "" // 상대방 닉네임
 
-    var serverUser1Name: Boolean = false
+    var serverUser1Name: Boolean = false //
     var serverUser2Name: Boolean = false
 
     var nameFinished: Boolean = false
@@ -63,12 +59,12 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
     var checkStoneArray: Array<IntArray> = Array<IntArray>(19) { IntArray(19) }
     var checkDiamondStone: Array<IntArray> = Array<IntArray>(19) { IntArray(19) }
 
-    var winnerStr: String = ""
+    var winnerStr: String = "" // 이긴 사람 닉네임 string
 
     var clickStoneChanged: Boolean = false
 
-    var roomKey = ""
-    var roomNum = ""
+    var roomKey = "" // 서버에서 방 key값
+    var roomNum = "" // 방 번호
 
     var playerTurn = 0 // 1이면 player1차례이고, 2면 player2차례입니다.
 
@@ -77,18 +73,56 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
     var confirmX = -1 // user가 두기로 했던 빨간 diamond와 같은 위치에 돌을 두는지 확인하는 변수들입니다.
     var confirmY = -1 // 결국 좌표를 확인하기 위한 변수입니다.
 
-    var myWinLoseRatio = ""
+    var myWinLoseRatio = "" // 승패 비율
 
     var isUserExit = false // 플레이어가 dialog에서 exit을 누르면 게임 보드 화면에서 나가는 것이므로 이 때 true로 바꿔줍니다.
     // 이 변수가 필요한 이유는, 이 변수를 사용하지 않으면 dialog가 두 번 띄워지는 오류가 발생합니다.
 
-    var toastDone = false
+    var toastDone = false // 상대방이 나갔을 때 toast message 띄워주었는지 확인하기 위한 Boolean 값
+
+    var isGameStart = false // turnNum이 2가 되면 게임 시작한 것으로 판단하며
+    // 이 때부터 게임을 나가면 패배가 기록된다.
+
+    var iAmGoingOut = false // 내가 나가려고 하는 경우 (onBackPressed를 연속적으로 두 번 눌렀을 때), 이 변수가 true 처리한다.
+    // 이 변수가 필요한 이유는 showDialog가 승리, 패배 두 번 뜨는 것을 방지하기 위함이다.
+
 
     @SuppressLint("ShowToast", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.twoplayer_gameboard)
         startService(Intent(this, UnCatchTaskService::class.java))
+
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                user1Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.black
+                    )
+                )
+                user2Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.black
+                    )
+                )
+            }
+            Configuration.UI_MODE_NIGHT_YES -> {
+                user1Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+                user2Nickname.setTextColor(
+                    ContextCompat.getColor(
+                        applicationContext,
+                        R.color.white
+                    )
+                )
+            }
+        }
 
         var soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
         var soundID = soundPool.load(this, R.raw.sound_stone, 1)
@@ -277,15 +311,15 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
         database.child("stones").addChildEventListener(object : ChildEventListener {
             @SuppressLint("ResourceAsColor")
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                var coX: String = snapshot.child("coX").getValue().toString()
-                var coXInt = coX.toInt()
+                val coX: String = snapshot.child("coX").getValue().toString()
+                val coXInt = coX.toInt()
 
-                var coY: String = snapshot.child("coY").getValue().toString()
-                var coYInt: Int = coY.toInt()
+                val coY: String = snapshot.child("coY").getValue().toString()
+                val coYInt: Int = coY.toInt()
 
-                var boardCoordinate: String = changeCoordinateToBoard(coXInt, coYInt)
-                var target: Int = resources.getIdentifier(boardCoordinate, "id", packageName)
-                var imageButton: ImageButton = findViewById(target)
+                val boardCoordinate: String = changeCoordinateToBoard(coXInt, coYInt)
+                val target: Int = resources.getIdentifier(boardCoordinate, "id", packageName)
+                val imageButton: ImageButton = findViewById(target)
 
                 clickStoneChanged = false
                 turnDataList.add(Turn("", "", coXInt, coYInt))
@@ -353,6 +387,9 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
 
                 soundPool.play(soundID, 1f, 1f, 0, 0, 1f);    // 돌 두는 소리가 나는 부분입니다
                 turnNum++ // 한 턴이 진행되었음을 의미. 중요한 부분
+//                if (turnNum >= 2) {
+//                    isGameStart = true
+//                }
 
                 database.child("turnNum").setValue(turnNum.toString())
 
@@ -398,23 +435,23 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
 
         //내가 화면에서 돌을 두기 위해 imageButton을 클릭하면 src의 변화를 주고, DB에 데이터를 변경시키는 부분
         for (i in 0..18) {
-            var str = "0"
+            val str = "0"
             var boardStr = "board"
-            var firstNum =
+            val firstNum =
                 if (i < 10) str.plus(i.toString()) else i.toString() // board 뒤에 바로 붙는 첫 번째 수
 
             boardStr = boardStr.plus(firstNum) // board00까지 완성
 
             for (j in 0..18) {
-                var boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
-                var zero = "0"
-                var boardFinal =
+                val boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
+                val zero = "0"
+                val boardFinal =
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
-                var target: Int =
+                val target: Int =
                     resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
-                var imageButton: ImageButton =
+                val imageButton: ImageButton =
                     findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
                 imageButton.setOnClickListener {
 
@@ -1022,12 +1059,16 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
             @SuppressLint("ResourceType", "SetTextI18n", "ShowToast")
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (i in snapshot.children) {
-
-
                     tempCnt++
                     if (i.key.equals("player1Id") && i.value.toString()
                             .isNotEmpty() && !nameFinished && (i.value.toString() != myNickName) && !isPlayer1Name
                     ) { // player1Id가 존재한다면
+                        isGameStart = true // 상대방이 들어온 시점을 기준으로 게임 시작처리를 합니다.
+                        Toast.makeText(
+                            applicationContext,
+                            getString(R.string.game_start),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         player1Name = i.value.toString()
                         player2Name = myNickName // 서버에서는 player2에 내 이름이 저장됩니다.
                         nameFinished = true
@@ -1043,6 +1084,12 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
                     } else if (i.key.equals("player2Id") && i.value.toString()
                             .isNotEmpty() && !nameFinished && !isPlayer2Name
                     ) { // player2Id에 이미 누가 있을 경우
+                        isGameStart = true // 상대방이 들어온 시점을 기준으로 게임 시작처리를 합니다.
+                        Toast.makeText(
+                            applicationContext,
+                            getString(R.string.game_start),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         player1Name = myNickName
                         player2Name = i.value.toString()
                         nameFinished = true
@@ -1057,74 +1104,101 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
                         break
                     }
 
-                    if (i.key.equals("player1Id") && i.value.toString()
-                            .isEmpty() && turnNum > 2
-                    ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
-                        user2Nickname.text = "Waiting..."
-                        user2Record.text = findViewById(R.string.waiting)
-                        println("string : ${i.value.toString()}")
+                    println("@@@@ + serverPlayer1Id = ${i.value.toString()}")
+                    if (i.key.equals("player1Id") && i.value.toString() != myNickName && i.value.toString()
+                            .isEmpty() && isGameStart
+                    ) { //상대방(player1Id가 empty일 때)이 나갔으면 승리처리합니다.
                         if (!toastDone && player1Name != myNickName) {
                             Toast.makeText(
                                 applicationContext,
                                 getString(R.string.user_left),
                                 Toast.LENGTH_SHORT
                             ).show()
-                            //toastDone = true
                         }
-                        toastDone = true
-                        if (!isUserExit) showDialog(database, myNickName)
-                    } else if (i.key.equals("player2Id") && i.value.toString()
-                            .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
-                    ) { // player2가 나갔을 때, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
-                        Log.e(
-                            "Name",
-                            "myNickName = $myNickName, ivalueName = ${i.value.toString()}"
-                        )
-                        user2Nickname.text = "Waiting..."
-                        user2Record.text = findViewById(R.string.waiting)
-
+                        //toastDone = true
+                        if (!iAmGoingOut) showDialog(database, myNickName)
+                        //if (!isUserExit && isGameStart) showDialog(database, myNickName)
+                    } else if (i.key.equals("player2Id") && i.value.toString() != myNickName && i.value.toString()
+                            .isEmpty() && isGameStart
+                    ) { //상대방(player1Id가 empty일 때)이 나갔으면 승리처리합니다.
                         if (!toastDone && player2Name != myNickName) {
                             Toast.makeText(
                                 applicationContext,
                                 getString(R.string.user_left),
                                 Toast.LENGTH_SHORT
                             ).show()
-                            //toastDone = true
                         }
-                        toastDone = true
-                        if (!isUserExit) showDialog(database, myNickName)
-                        println("turnNUM!!!! : $turnNum")
+                        if (!iAmGoingOut) showDialog(database, myNickName)
+                        //toastDone = true
+                        //if (!isUserExit && isGameStart) showDialog(database, myNickName)
                     }
 
-                    Log.e("getUserName", "호출되었습니다.")
-                    println("player1ID : ${i.key.equals("player1Id")}, empty? : ${i.value.toString().isEmpty()}")
+//                    if (i.key.equals("player1Id") && i.value.toString()
+//                            .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
+//                    ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
+//                        user2Nickname.text = "Waiting..."
+//                        user2Record.text = findViewById(R.string.waiting)
+//                        println("string : ${i.value.toString()}")
+//                        if (!toastDone && player1Name != myNickName) {
+//                            Toast.makeText(
+//                                applicationContext,
+//                                getString(R.string.user_left),
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                            //toastDone = true
+//                        }
+//                        toastDone = true
+//                        if (!isUserExit && isGameStart) showDialog(database, myNickName)
+//                    } else if (i.key.equals("player2Id") && i.value.toString()
+//                            .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
+//                    ) { // player2가 나갔을 때, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
+//                        Log.e(
+//                            "Name",
+//                            "myNickName = $myNickName, ivalueName = ${i.value.toString()}"
+//                        )
+//                        user2Nickname.text = "Waiting..."
+//                        user2Record.text = findViewById(R.string.waiting)
+//
+//                        if (!toastDone && player2Name != myNickName) {
+//                            Toast.makeText(
+//                                applicationContext,
+//                                getString(R.string.user_left),
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                            //toastDone = true
+//                        }
+//                        toastDone = true
+//                        if (!isUserExit && isGameStart) showDialog(database, myNickName)
+//                        println("turnNUM!!!! : $turnNum")
+//                    }
+
                     /*아래 조건문은 player1Id에 값이 없어지면(사용자가 나갔으면) 사용자 닉네임이 나오는 부분을 Waiting...으로 바꾸는 작업을 해준다.
                     * 추가적으로 Toast message로 사용자가 나갔음을 알려준다.*/
-                    if(i.key.equals("player1Id")&&i.value.toString().isEmpty() && turnNum <= 1){
-                        user2Nickname.text = "Waiting..."
-                        user2Record.text = findViewById(R.string.waiting)
-                        Toast.makeText(
-                            applicationContext,
-                            getString(R.string.user_left),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        //nameFinished = false
-                        //isPlayer2Name = false
-
-                    }
+//                    if(i.key.equals("player1Id")&&i.value.toString().isEmpty() && turnNum <= 1){
+//                        user2Nickname.text = "Waiting..."
+//                        user2Record.text = findViewById(R.string.waiting)
+//                        Toast.makeText(
+//                            applicationContext,
+//                            getString(R.string.user_left),
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                        //nameFinished = false
+//                        //isPlayer2Name = false
+//
+//                    }
                     /*아래 조건문은 player2Id에 값이 없어지면(사용자가 나갔으면) 사용자 닉네임이 나오는 부분을 Waiting...으로 바꾸는 작업을 해준다.
                     * 추가적으로 Toast message로 사용자가 나갔음을 알려준다.*/
-                    if(i.key.equals("player2Id")&&i.value.toString().isEmpty() && turnNum <= 1){
-                        user2Nickname.text = "Waiting..."
-                        user2Record.text = findViewById(R.string.waiting)
-                        Toast.makeText(
-                            applicationContext,
-                            getString(R.string.user_left),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        //nameFinished = false
-                        //isPlayer1Name = false
-                    }
+//                    if(i.key.equals("player2Id")&&i.value.toString().isEmpty() && turnNum <= 1){
+//                        user2Nickname.text = "Waiting..."
+//                        user2Record.text = findViewById(R.string.waiting)
+//                        Toast.makeText(
+//                            applicationContext,
+//                            getString(R.string.user_left),
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                        //nameFinished = false
+//                        //isPlayer1Name = false
+//                    }
 
                 } // 이 for문의 조건문에 맞는 항목이 없다면 방에 사람이 없다는 뜻이므로 아래에서 user1과 user1 tv위치에 값들을 설정해줍니다.
 
@@ -1146,33 +1220,31 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
         })
 
 
-
     }
 
     private fun zoomBoard32() {
         for (i in 0..18) { // 행
-            var str = "0"
+            val str = "0"
             var boardStr = "board"
 
-            var firstNum =
+            val firstNum =
                 if (i < 10) str.plus(i.toString()) else i.toString() // board 뒤에 바로 붙는 첫 번째 수
 
             boardStr = boardStr.plus(firstNum) // board00까지 완성
-            //Log.d("boardStr", boardStr)
 
             for (j in 0..18) { // 열
-                var boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
-                var zero = "0"
-                var boardFinal =
+                val boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
+                val zero = "0"
+                val boardFinal =
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
                 //println("@@@$boardFinal")
 
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
-                var target: Int =
+                val target: Int =
                     resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
-                var imageButton: ImageButton =
+                val imageButton: ImageButton =
                     findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
 
 
@@ -1227,27 +1299,26 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
             var str = "0"
             var boardStr = "board"
 
-            var firstNum =
+            val firstNum =
                 if (i < 10) str.plus(i.toString()) else i.toString() // board 뒤에 바로 붙는 첫 번째 수
 
             str = if (i < 10) str.plus(i.toString()) else i.toString()
 
             boardStr = boardStr.plus(firstNum) // board00까지 완성
-            //Log.d("boardStr", boardStr)
 
             for (j in 0..18) { // 열
-                var boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
-                var zero = "0"
-                var boardFinal =
+                val boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
+                val zero = "0"
+                val boardFinal =
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
                 //println("@@@$boardFinal")
 
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
-                var target: Int =
+                val target: Int =
                     resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
-                var imageButton: ImageButton =
+                val imageButton: ImageButton =
                     findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
 
                 if (checkDiamondStone[i][j] == 1) {
@@ -1308,21 +1379,20 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
             str = if (i < 10) str.plus(i.toString()) else i.toString()
 
             boardStr = boardStr.plus(firstNum) // board00까지 완성
-            //Log.d("boardStr", boardStr)
 
             for (j in 0..18) { // 열
-                var boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
-                var zero = "0"
-                var boardFinal =
+                val boardAndFirstNum = boardStr // boardStr값은 변경되지 않도록 함
+                val zero = "0"
+                val boardFinal =
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
                 //println("@@@$boardFinal")
 
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
-                var target: Int =
+                val target: Int =
                     resources.getIdentifier(boardFinal, "id", packageName) // id 값을 target에 저장
-                var imageButton: ImageButton =
+                val imageButton: ImageButton =
                     findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
 
 
@@ -1426,6 +1496,7 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
         for (j in 0..13) { // 가로로 다 맞았을 때
             for (i in 0..18) {
                 if (stoneColorArray[i][j] == 1 && stoneColorArray[i][j + 1] == 1 && stoneColorArray[i][j + 2] == 1 && stoneColorArray[i][j + 3] == 1 && stoneColorArray[i][j + 4] == 1 && stoneColorArray[i][j + 5] == 1) {
+                    println("### 3")
                     winnerStr = player1Name
                     //Toast.makeText(this, "3$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
@@ -1434,6 +1505,7 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
                     showDialog(database, winnerStr)
                     return
                 } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i][j + 1] == 2 && stoneColorArray[i][j + 2] == 2 && stoneColorArray[i][j + 3] == 2 && stoneColorArray[i][j + 4] == 2 && stoneColorArray[i][j + 5] == 2) {
+                    println("### 4")
                     winnerStr = player2Name
                     //Toast.makeText(this, "4$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
@@ -1449,6 +1521,7 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
         for (j in 0..13) { // \(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
             for (i in 0..13) {
                 if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j + 1] == 1 && stoneColorArray[i + 2][j + 2] == 1 && stoneColorArray[i + 3][j + 3] == 1 && stoneColorArray[i + 4][j + 4] == 1 && stoneColorArray[i + 5][j + 5] == 1) {
+                    println("### 5")
                     winnerStr = player1Name
                     //Toast.makeText(this, "5$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
@@ -1457,6 +1530,7 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
                     showDialog(database, winnerStr)
                     return
                 } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j + 1] == 2 && stoneColorArray[i + 2][j + 2] == 2 && stoneColorArray[i + 3][j + 3] == 2 && stoneColorArray[i + 4][j + 4] == 2 && stoneColorArray[i + 5][j + 5] == 2) {
+                    println("### 6")
                     winnerStr = player2Name
                     //Toast.makeText(this, "6$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
@@ -1468,9 +1542,10 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
             }
         }
 
-        for (j in 0..13) { // /(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
+        for (j in 0..13) { // /(오른쪽 위에서 왼쪽 아래) 대각선 다 맞았을 때
             for (i in 0..13) {
                 if (stoneColorArray[19 - i - 1][j] == 1 && stoneColorArray[19 - i - 2][j + 1] == 1 && stoneColorArray[19 - i - 3][j + 2] == 1 && stoneColorArray[19 - i - 4][j + 3] == 1 && stoneColorArray[19 - i - 5][j + 4] == 1 && stoneColorArray[19 - i - 6][j + 5] == 1) {
+                    println("### 7")
                     winnerStr = player1Name
                     //Toast.makeText(this, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
@@ -1479,39 +1554,87 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
                     showDialog(database, winnerStr)
                     return
                 } else if (stoneColorArray[19 - i - 1][j] == 2 && stoneColorArray[19 - i - 2][j + 1] == 2 && stoneColorArray[19 - i - 3][j + 2] == 2 && stoneColorArray[19 - i - 4][j + 3] == 2 && stoneColorArray[19 - i - 5][j + 4] == 2 && stoneColorArray[19 - i - 6][j + 5] == 2) {
+                    println("### 8")
                     winnerStr = player2Name
                     //Toast.makeText(this, "8$winnerStr win!", Toast.LENGTH_SHORT).show()
                     printColorBoard()
                     initBoards()
                     turnNum = 1
+                    showDialog(database, winnerStr)
                     return
                 }
             }
         }
     }
 
+    @SuppressLint("InflateParams")
     private fun showDialog(database: DatabaseReference, winnerStr: String) {
 
         val builder = AlertDialog.Builder(this)
-        val winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
-        val loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+        var winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+        var loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+                loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+            }
+            Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                winDialogView = layoutInflater.inflate(R.layout.dialog_win_night, null)
+                loseDialogView = layoutInflater.inflate(R.layout.dialog_lose_night, null)
+            }
+        }
 
-        var userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
+
+        val userDatabase = FirebaseDatabase.getInstance().reference.child("Users")
 
         println("### winnerStr : $winnerStr, myNickName : $myNickName")
 
         if (myNickName == winnerStr && (!this.isFinishing)) { // 만약 승리했다면,
-            builder.setView(winDialogView)
-                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
-                //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
-                //}
-                .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
-                    isUserExit = true
-                    exitProcess(database)
+            //winDialogView.
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                    builder.setView(winDialogView)
+                        //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                        //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+                        //}
+                        .setNegativeButton(
+                            Html.fromHtml("<font color='#FFFFFF'>${R.string.upper_exit}</font>")
+                                .toString()
+                        ) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            //.setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
                 }
-                .setCancelable(false)
-                .show()
-                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+                Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                    builder.setView(winDialogView)
+                        //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                        //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+                        //}
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                }
+            }
+//            builder.setView(winDialogView)
+//                //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+//                //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+//                //}
+//                .setNegativeButton(Html.fromHtml("<font color='#FF7F27'>${R.string.upper_exit}</font>").toString()) { _, _ -> // EXIT 누르면 MainActivity로 이동
+//                //.setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+//                    isUserExit = true
+//                    exitProcess(database)
+//                }
+//                .setCancelable(false)
+//                .show()
+//                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
 
 
             //이겼을 때 win 값 setValue해주고, ratio값을 업데이트해줍니다.
@@ -1519,12 +1642,12 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (i in snapshot.children) {
                         if (myNickName == i.child("nickName").value) { // 같은 이름을 찾아서 win value를 1 올려줍니다.
-                            var winData = i.child("win").value.toString()
-                            var loseData = i.child("lose").value.toString()
+                            val winData = i.child("win").value.toString()
+                            val loseData = i.child("lose").value.toString()
                             var winInt = winData.toFloat()
-                            var loseInt = loseData.toFloat()
+                            val loseInt = loseData.toFloat()
                             winInt++
-                            var ratio =
+                            val ratio =
                                 (((winInt / (winInt + loseInt)) * 100 * 100).roundToInt() / 100F).toString()
                                     .plus("%") // 소수점 둘 째자리 까지 표기
                             userDatabase.child(i.key.toString()).child("win")
@@ -1542,18 +1665,18 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
             })
 
 
-        } else if (myNickName != winnerStr) { // 만약 패배했다면,
+        } else if (myNickName != winnerStr && (!this.isFinishing)) { // 만약 패배했다면,
 
             userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (i in snapshot.children) {
                         if (myNickName == i.child("nickName").value) { // 같은 이름을 찾아서 win value를 1 올려줍니다.
-                            var winData = i.child("win").value.toString()
-                            var loseData = i.child("lose").value.toString()
-                            var winInt = winData.toFloat()
+                            val winData = i.child("win").value.toString()
+                            val loseData = i.child("lose").value.toString()
+                            val winInt = winData.toFloat()
                             var loseInt = loseData.toInt()
                             loseInt++
-                            var ratio =
+                            val ratio =
                                 (((winInt / (winInt + loseInt)) * 100 * 100).roundToInt() / 100F).toString()
                                     .plus("%") // 소수점 둘 째자리 까지 표기
                             userDatabase.child(i.key.toString()).child("lose")
@@ -1570,38 +1693,59 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
 
             })
 
-            builder.setView(loseDialogView)
-                .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
-                    isUserExit = true
-                    exitProcess(database)
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                    builder.setView(loseDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
                 }
-                .setCancelable(false)
-                .show()
-                .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+                Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                    builder.setView(loseDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            isUserExit = true
+                            exitProcess(database)
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                }
+            }
+
 
 
         }
     }
 
     private fun exitProcess(database: DatabaseReference) {
+        /** 나가고 방을 없애지 않으려면 아래 코드가 필요하므로 지우면 안된다.
         if (serverUser1Name) { // 서버의 player1Id에 내 닉네임이 저장되어 있다면
-            var updateUserName = mutableMapOf<String, Any>()
-            updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
-            database.updateChildren(updateUserName)//Firebase에 업데이트
+        var updateUserName = mutableMapOf<String, Any>()
+        updateUserName["player1Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
+        database.updateChildren(updateUserName)//Firebase에 업데이트
         } else if (serverUser2Name) {
-            var updateUserName = mutableMapOf<String, Any>()
-            updateUserName["player2Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
-            database.updateChildren(updateUserName)//Firebase에 업데이트
+        var updateUserName = mutableMapOf<String, Any>()
+        updateUserName["player2Id"] = "" // 내 이름이 있던 player1Id를 빈 곳(String)으로 변경
+        database.updateChildren(updateUserName)//Firebase에 업데이트
         }
+         */
 
-        GlobalScope.launch { // 서버에서 사용자 이름란(player1Id, player2Id)에 둘 다 없어야 해당 방을 삭제한다.
-            if(isServerPlayer1Exit()&&isServerPlayer2Exit()){
-                database.removeValue()
-                finish()
-            }else{
-                finish()
-            }
-        }
+//        GlobalScope.launch { // 서버에서 사용자 이름란(player1Id, player2Id)에 둘 다 없어야 해당 방을 삭제한다.
+//            Log.e("Player1Exit", "${isServerPlayer1Exit()}")
+//            Log.e("Player2Exit", "${isServerPlayer2Exit()}")
+//            if(isServerPlayer1Exit()&&isServerPlayer2Exit()){
+//                database.removeValue()
+//                finish()
+//            }else{
+//                finish()
+//            }
+//        }
+
+        database.removeValue()
         finish()
 
     }
@@ -1610,9 +1754,9 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             var isPlayer1Empty = false
             val database = FirebaseDatabase.getInstance().reference.child("roomId")
-            database.child("player1Id").addValueEventListener(object:ValueEventListener{
+            database.child("player1Id").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if(snapshot.value.toString().isEmpty()){
+                    if (snapshot.value.toString().isEmpty()) {
                         isPlayer1Empty = true
                         it.resume(isPlayer1Empty)
                     }
@@ -1627,9 +1771,9 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             var isPlayer2Empty = false
             val database = FirebaseDatabase.getInstance().reference.child("roomId")
-            database.child("player2Id").addValueEventListener(object:ValueEventListener{
+            database.child("player2Id").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if(snapshot.value.toString().isEmpty()){
+                    if (snapshot.value.toString().isEmpty()) {
                         isPlayer2Empty = true
                         it.resume(isPlayer2Empty)
                     }
@@ -1655,16 +1799,69 @@ class TwoplayerGameboardBackUp : AppCompatActivity() {
 
         if (System.currentTimeMillis() <= backKeyPressedTime + 2500) { // 만약 클릭한 시간이 2.5초가 이하라면(연속적으로 클릭했을 때)
             println("text : ${user2Nickname.text}, waiting = waiting...")
-            if(user2Nickname.text == "Waiting…"){ // 상대방이 아직 안들어왔는데 그냥 나가려고 시도할 때 패배 dialog를 보여주지 않고 그냥 종료.
+            if (user2Nickname.text == "Waiting…") { // 상대방이 아직 안들어왔는데 그냥 나가려고 시도할 때 패배 dialog를 보여주지 않고 그냥 종료.
+                database.removeValue() // 서버에서 방을 없애고 나간다.
                 finish()
-            }else{
+            } else { // 상대방이 들어왔는데(방에 두 명이 있는데 게임은 시작 안한경우) 나가려고 하는 경우
+                iAmGoingOut = true
                 showDialog(database, enemyName)
+                if (player1Name == myNickName) { // 서버에서 player1name이 내 이름이라면 player1을 서버에서 지워준다.
+                    database.child("player2Id")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if (snapshot.value == "") { // 내가 나가는데 상대방(player2)도 없으면 방 없앤다.
+                                    database.removeValue()
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {}
+                        })
+                    database.child("player1Id").setValue("")
+                } else if (player2Name == myNickName) {
+                    database.child("player1Id")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if (snapshot.value == "") { // 내가 나가는데 상대방(player1)도 없으면 방 없앤다.
+                                    database.removeValue()
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {}
+                        })
+                    database.child("player2Id").setValue("")
+                }
+                //finish()
+//                if(isGameStart) showDialog(database, enemyName)
+//                else {
+//                    if(player1Name==myNickName){ // 서버에서 player1name이 내 이름이라면 player1을 서버에서 지워준다.
+//                        database.child("player2Id").addListenerForSingleValueEvent(object:ValueEventListener{
+//                            override fun onDataChange(snapshot: DataSnapshot) {
+//                                if(snapshot.value==""){ // 내가 나가는데 상대방(player2)도 없으면 방 없앤다.
+//                                    database.removeValue()
+//                                }
+//                            }
+//                            override fun onCancelled(error: DatabaseError) { }
+//                        })
+//                        database.child("player1Id").setValue("")
+//                    }else if(player2Name == myNickName){
+//                        database.child("player1Id").addListenerForSingleValueEvent(object:ValueEventListener{
+//                            override fun onDataChange(snapshot: DataSnapshot) {
+//                                if(snapshot.value==""){ // 내가 나가는데 상대방(player1)도 없으면 방 없앤다.
+//                                    database.removeValue()
+//                                }
+//                            }
+//                            override fun onCancelled(error: DatabaseError) { }
+//                        })
+//                        database.child("player2Id").setValue("")
+//                    }
+//                    finish()
+//                }
             }
         }
     }
 
     fun updateUserRatio(userNickName: String) {
-        var database = FirebaseDatabase.getInstance().reference.child("Users")
+        val database = FirebaseDatabase.getInstance().reference.child("Users")
         var ratio = ""
 
         database.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -1718,7 +1915,6 @@ class UnCatchTaskServiceBackUp : Service() { //
     }
 
     override fun onTaskRemoved(rootIntent: Intent) {//사용자가 나갔을 때 처리
-        Log.e("onTaskRemoved", "onTaskRemoved")
         Log.e("nickName", SharedData.prefs.getName("nickName", ""))
         val database = FirebaseDatabase.getInstance().reference.child("roomId")
         val myName = SharedData.prefs.getName("nickName", "")

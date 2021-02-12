@@ -37,4 +37,6 @@
     <string name="upper_exit">EXIT</string>
     <string name="game_start">Game Start</string>
     <string name="plz_set_nick">Please Enter your nick name!</string>
+    <string name="computer">AI</string>
+    <string name="practice_with_ai">Play with AI</string>
 </resources>

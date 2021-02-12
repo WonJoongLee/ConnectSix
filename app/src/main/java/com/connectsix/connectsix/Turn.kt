@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix
+package com.connectsix.connectsix
 
 import com.google.firebase.database.IgnoreExtraProperties
 

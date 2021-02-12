@@ -1,0 +1,2408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/user2Layout"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        app:layout_constraintBottom_toTopOf="@id/twoPlayerBoard"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!--부모 view보다 작게 하기-->
+        <TextView
+            android:id="@+id/turnNumTextView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/turn_number_black"
+            android:fontFamily="@font/stentiga"
+            android:gravity="center"
+            android:text="@string/numberOne"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/roomNoLinearLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/turnNumTextView"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/roomNumberTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="bottom"
+                android:text="@string/room_num_indicator"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/currentRoomNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/stentiga"
+                android:gravity="top"
+                android:text="@string/temporary_room_num"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+
+        <ImageView
+            android:id="@+id/user2Turn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/abc_vector_test"
+            android:background="@drawable/ic_baseline_circle_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="invisible"/>
+
+        <TextView
+            android:id="@+id/player2Nickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/computer"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/user2Turn"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/twoPlayerBoard"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/user1Layout"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/user2Layout"
+        android:foregroundGravity="center"
+        >
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            >
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="horizontal"
+                >
+
+                <GridLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="fill"
+                    android:columnCount="19"
+                    android:orientation="horizontal"
+                    android:rowCount="19"
+                    >
+
+                    <!--0행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0000"
+                        android:background="#00FFFFFF"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left_top_corner64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0001"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0002"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0003"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0004"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0005"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0006"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0007"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0008"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0009"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0010"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0011"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0012"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0013"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0014"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0015"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0016"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0017"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/top64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0018"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right_top_corner64" />
+
+                    <!--1행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0100"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0101"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0102"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0103"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0104"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0105"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0106"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0107"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0108"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0109"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0110"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0111"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0112"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0113"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0114"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0115"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0116"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0117"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0118"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--2행@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+                    <ImageButton
+                        android:id="@+id/sBoard0200"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0201"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0202"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0203"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0204"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0205"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0206"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0207"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0208"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0209"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0210"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0211"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0212"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0213"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0214"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0215"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0216"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0217"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0218"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--3행@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+                    <ImageButton
+                        android:id="@+id/sBoard0300"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0301"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0302"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0303"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0304"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0305"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0306"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0307"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0308"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0309"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0310"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0311"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0312"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0313"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0314"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0315"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0316"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0317"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0318"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--4행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0400"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0401"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0402"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0403"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0404"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0405"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0406"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0407"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0408"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0409"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0410"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0411"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0412"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0413"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0414"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0415"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0416"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0417"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0418"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--5행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0500"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0501"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0502"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0503"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0504"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0505"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0506"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0507"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0508"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0509"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0510"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0511"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0512"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0513"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0514"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0515"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0516"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0517"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0518"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--6행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0600"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0601"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0602"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0603"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0604"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0605"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0606"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0607"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0608"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0609"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0610"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0611"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0612"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0613"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0614"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0615"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0616"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0617"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0618"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--7행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0700"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0701"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0702"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0703"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0704"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0705"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0706"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0707"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0708"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0709"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0710"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0711"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0712"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0713"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0714"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0715"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0716"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0717"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0718"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--8행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0800"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0801"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0802"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0803"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0804"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0805"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0806"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0807"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0808"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0809"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0810"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0811"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0812"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0813"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0814"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0815"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0816"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0817"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0818"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--9행-->
+                    <ImageButton
+                        android:id="@+id/sBoard0900"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard0901"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0902"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0903"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0904"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0905"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0906"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0907"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0908"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0909"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0910"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0911"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0912"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0913"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0914"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0915"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0916"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0917"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard0918"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--10행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1000"
+                        android:layout_width="wrap_content"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1001"
+                        android:layout_width="wrap_content"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1002"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1003"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1004"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1005"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1006"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1007"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1008"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1009"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1010"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1011"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1012"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1013"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1014"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1015"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1016"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1017"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1018"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--11행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1100"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1101"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1102"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1103"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1104"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1105"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1106"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1107"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1108"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1109"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1110"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1111"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1112"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1113"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1114"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1115"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1116"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1117"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1118"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--12행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1200"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1201"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1202"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1203"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1204"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1205"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1206"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1207"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1208"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1209"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1210"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1211"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1212"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1213"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1214"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1215"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1216"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1217"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1218"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--13행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1300"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1301"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1302"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1303"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1304"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1305"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1306"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1307"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1308"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1309"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1310"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1311"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1312"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1313"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1314"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1315"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1316"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1317"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1318"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--14행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1400"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1401"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1402"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1403"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1404"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1405"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1406"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1407"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1408"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1409"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1410"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1411"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1412"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1413"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1414"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1415"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1416"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1417"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1418"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--15행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1500"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1501"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1502"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1503"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1504"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1505"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1506"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1507"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1508"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1509"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1510"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1511"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1512"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1513"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1514"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1515"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/point64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1516"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1517"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1518"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--16행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1600"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1601"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1602"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1603"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1604"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1605"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1606"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1607"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1608"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1609"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1610"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1611"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1612"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1613"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1614"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1615"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1616"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1617"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1618"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--17행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1700"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1701"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1702"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1703"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1704"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1705"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1706"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1707"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1708"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1709"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1710"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1711"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1712"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1713"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1714"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1715"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1716"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1717"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/standard64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1718"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right64" />
+
+                    <!--18행-->
+                    <ImageButton
+                        android:id="@+id/sBoard1800"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/left_bottom_corner64" />
+
+
+                    <ImageButton
+                        android:id="@+id/sBoard1801"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1802"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1803"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1804"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1805"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1806"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1807"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1808"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1809"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1810"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1811"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1812"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1813"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1814"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1815"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1816"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1817"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/bottom64" />
+
+                    <ImageButton
+                        android:id="@+id/sBoard1818"
+                        android:background="#00FFFFFF"
+                        android:soundEffectsEnabled="false"
+                        android:src="@drawable/right_bottom_corner64" />
+
+
+                </GridLayout>
+
+            </HorizontalScrollView>
+
+        </ScrollView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/user1Layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/twoPlayerBoard"
+        app:layout_constraintVertical_bias="1">
+
+        <ImageView
+            android:id="@+id/user1Turn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/abc_vector_test"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@drawable/ic_baseline_circle_24"
+            android:rotation="180"
+            android:visibility="invisible"/>
+
+        <TextView
+            android:id="@+id/player1Nickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/waiting"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/user1Turn"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/zoomOutButton"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/zoomout_ripple"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/zoomInButton"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@drawable/zoomin_ripple"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/zoomOutButton"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

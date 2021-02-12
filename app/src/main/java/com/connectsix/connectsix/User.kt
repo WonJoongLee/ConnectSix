@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix
+package com.connectsix.connectsix
 
 data class User (
     var nickName : String? = "",

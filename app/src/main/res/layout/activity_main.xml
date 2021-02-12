@@ -81,7 +81,7 @@
         android:layout_marginHorizontal="60dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/randomGameStartButton"
+        app:layout_constraintBottom_toTopOf="@id/singlePlayButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/circleLinearLayout">
@@ -120,7 +120,7 @@
 
     <Button
         android:id="@+id/changeNickname"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:backgroundTint="#AEAEAE"
         android:padding="5dp"
@@ -128,22 +128,24 @@
         android:textColor="@color/black"
         android:textSize="12sp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/randomGameStartButton"
+        app:layout_constraintBottom_toTopOf="@id/singlePlayButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/nicknameLinearLayout" />
 
     <Button
-        android:id="@+id/randomGameStartButton"
-        android:layout_width="wrap_content"
+        android:id="@+id/singlePlayButton"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/black"
-        android:text="@string/random_match"
+        android:text="@string/practice_with_ai"
+        android:backgroundTint="#AEAEAE"
+        android:textColor="@color/black"
+        android:textSize="12sp"
         app:layout_constraintBottom_toTopOf="@id/roomNumberEdittext"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/changeNickname"
-        android:visibility="invisible"/>
+        />
 
 
     <EditText
@@ -155,7 +157,7 @@
         app:layout_constraintBottom_toTopOf="@id/createGameButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/randomGameStartButton"
+        app:layout_constraintTop_toBottomOf="@id/singlePlayButton"
         android:textCursorDrawable="@drawable/cursor_drawable_black"/>
 
     <Button

@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix
+package com.connectsix.connectsix
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

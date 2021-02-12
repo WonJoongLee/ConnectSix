@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ConnectSix.connectsix">
+    package="com.connectsix.connectsix">
 
     <application
         android:allowBackup="true"
@@ -9,10 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ConnectSix"
-        android:name="com.ConnectSix.connectsix.sharedRef.SharedData">
-        <activity android:name="com.ConnectSix.connectsix.TwoplayerGameboard"
+        android:name="com.connectsix.connectsix.sharedRef.SharedData">
+        <activity android:name="com.connectsix.connectsix.TwoplayerGameboard"/>
+        <activity android:name="com.connectsix.connectsix.SinglePlayer"
             />
-        <activity android:name="com.ConnectSix.connectsix.MainActivity"
+        <activity android:name="com.connectsix.connectsix.MainActivity"
             android:configChanges="uiMode">
 
             <intent-filter>
@@ -21,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="com.ConnectSix.connectsix.UnCatchTaskService"
+        <service android:name="com.connectsix.connectsix.UnCatchTaskService"
             android:stopWithTask="false"/>
     </application>
 

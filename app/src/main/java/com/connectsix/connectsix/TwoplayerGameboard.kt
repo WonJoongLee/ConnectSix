@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix
+package com.connectsix.connectsix
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -19,7 +19,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.ConnectSix.connectsix.sharedRef.SharedData
+import com.connectsix.connectsix.sharedRef.SharedData
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
 import kotlinx.coroutines.GlobalScope
@@ -387,9 +387,6 @@ class TwoplayerGameboard : AppCompatActivity() {
 
                 soundPool.play(soundID, 1f, 1f, 0, 0, 1f);    // 돌 두는 소리가 나는 부분입니다
                 turnNum++ // 한 턴이 진행되었음을 의미. 중요한 부분
-//                if (turnNum >= 2) {
-//                    isGameStart = true
-//                }
 
                 database.child("turnNum").setValue(turnNum.toString())
 
@@ -576,7 +573,8 @@ class TwoplayerGameboard : AppCompatActivity() {
 
     private fun disableClick(pTurn: Int) {
         if ((player1Name == myNickName && pTurn == 2) || (player2Name == myNickName && pTurn == 1)) {
-            // 서버 player1Id가 내 닉네임이고, 내 차례가 아니라면(pTurn == 2) 또는 서버 player2Id가 내 닉네임이고, 내 차례가 아니라면(pTurn==1)
+                // 서버 player1Id가 내 닉네임이고, 내 차례가 아니라면(pTurn == 2) 또는 서버 player2Id가 내 닉네임이고, 내 차례가 아니라면(pTurn==1)
+                // 즉, 모든 버튼을 클릭 불가능하도록 설정하는 부분입니다.
             var boardStr: String
             var boardIStr: String // board00꼴까지 만들고 board00에 저장합니다.
             for (i in 0..18) {
@@ -618,7 +616,7 @@ class TwoplayerGameboard : AppCompatActivity() {
     }
 
 
-    //초록색으로 두어졌던 돌들을 원래 초록색을 빼고 일반적인 돌로 바꿔줍니다.
+    // 최근에 둔 돌이어서 체크되었던 돌들을 체크되지 않은 일반적인 돌로 바꿔줍니다.
     private fun changetoOriginalStone(imageButton: ImageButton, color: String, i: Int, j: Int) {
         //println("%%% ${imageButton}, ${color}, ${i}, ${j}, $clickCnt")
         when (clickCnt) {
@@ -1132,74 +1130,6 @@ class TwoplayerGameboard : AppCompatActivity() {
                         //toastDone = true
                         //if (!isUserExit && isGameStart) showDialog(database, myNickName)
                     }
-
-//                    if (i.key.equals("player1Id") && i.value.toString()
-//                            .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
-//                    ) { //player1이 나갔을 경우, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
-//                        user2Nickname.text = "Waiting..."
-//                        user2Record.text = findViewById(R.string.waiting)
-//                        println("string : ${i.value.toString()}")
-//                        if (!toastDone && player1Name != myNickName) {
-//                            Toast.makeText(
-//                                applicationContext,
-//                                getString(R.string.user_left),
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                            //toastDone = true
-//                        }
-//                        toastDone = true
-//                        if (!isUserExit && isGameStart) showDialog(database, myNickName)
-//                    } else if (i.key.equals("player2Id") && i.value.toString()
-//                            .isEmpty() && turnNum > 2 && i.value.toString() != myNickName
-//                    ) { // player2가 나갔을 때, turnNum이 1이면 게임 시작한 경우가 아니므로 이기고 진 것을 판단할 수 없습니다.
-//                        Log.e(
-//                            "Name",
-//                            "myNickName = $myNickName, ivalueName = ${i.value.toString()}"
-//                        )
-//                        user2Nickname.text = "Waiting..."
-//                        user2Record.text = findViewById(R.string.waiting)
-//
-//                        if (!toastDone && player2Name != myNickName) {
-//                            Toast.makeText(
-//                                applicationContext,
-//                                getString(R.string.user_left),
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                            //toastDone = true
-//                        }
-//                        toastDone = true
-//                        if (!isUserExit && isGameStart) showDialog(database, myNickName)
-//                        println("turnNUM!!!! : $turnNum")
-//                    }
-
-                    /*아래 조건문은 player1Id에 값이 없어지면(사용자가 나갔으면) 사용자 닉네임이 나오는 부분을 Waiting...으로 바꾸는 작업을 해준다.
-                    * 추가적으로 Toast message로 사용자가 나갔음을 알려준다.*/
-//                    if(i.key.equals("player1Id")&&i.value.toString().isEmpty() && turnNum <= 1){
-//                        user2Nickname.text = "Waiting..."
-//                        user2Record.text = findViewById(R.string.waiting)
-//                        Toast.makeText(
-//                            applicationContext,
-//                            getString(R.string.user_left),
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        //nameFinished = false
-//                        //isPlayer2Name = false
-//
-//                    }
-                    /*아래 조건문은 player2Id에 값이 없어지면(사용자가 나갔으면) 사용자 닉네임이 나오는 부분을 Waiting...으로 바꾸는 작업을 해준다.
-                    * 추가적으로 Toast message로 사용자가 나갔음을 알려준다.*/
-//                    if(i.key.equals("player2Id")&&i.value.toString().isEmpty() && turnNum <= 1){
-//                        user2Nickname.text = "Waiting..."
-//                        user2Record.text = findViewById(R.string.waiting)
-//                        Toast.makeText(
-//                            applicationContext,
-//                            getString(R.string.user_left),
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        //nameFinished = false
-//                        //isPlayer1Name = false
-//                    }
-
                 } // 이 for문의 조건문에 맞는 항목이 없다면 방에 사람이 없다는 뜻이므로 아래에서 user1과 user1 tv위치에 값들을 설정해줍니다.
 
                 //방에 사람이 아무도 없을 때
@@ -1597,10 +1527,7 @@ class TwoplayerGameboard : AppCompatActivity() {
                         //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
                         //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
                         //}
-                        .setNegativeButton(
-                            Html.fromHtml("<font color='#FFFFFF'>${R.string.upper_exit}</font>")
-                                .toString()
-                        ) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
                             //.setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
                             isUserExit = true
                             exitProcess(database)

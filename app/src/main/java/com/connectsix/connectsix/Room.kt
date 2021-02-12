@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix
+package com.connectsix.connectsix
 
 data class Room (
     var roomId : String = "",

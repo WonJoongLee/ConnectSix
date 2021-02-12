@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix.sharedRef
+package com.connectsix.connectsix.sharedRef
 
 import android.content.Context
 import android.content.SharedPreferences

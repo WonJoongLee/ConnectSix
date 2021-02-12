@@ -1,4 +1,4 @@
-package com.ConnectSix.connectsix
+package com.connectsix.connectsix
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -16,7 +16,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.ConnectSix.connectsix.sharedRef.SharedData
+import com.connectsix.connectsix.sharedRef.SharedData
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.*
@@ -26,13 +26,23 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+/** Version 1.1.1 업데이트 사항!! **
+ *  1. 다크모드 아닐 때, 승리 시 dialog 뜨는 부분 중 나가기의 text가 "Exit" id 값이 뜨는 오류 발생 -> 오류 수정 완료
+ */
 
 //TODO 당장 해야 할 것
-
+//TODO 싱글플레이 모드에서 흰 돌을 먼저 착수할 때 초반 순서가 맞지 않는 에러 고쳐야 함
+//TODO 이거나 졌을 때 나오는 Dialog에서 나가기가 갑자기 숫자가 뜸
 
 //TODO 추후에 해야 할 것
+//TODO 다크모드 설정 시 화면을 다시 불러오는 문제 해결하기(싱글모드, 멀티 모드에서 모두 문제
+//TODO 싱글모드에서는 서버랑 연동이 되지 않아서 아예 판이 날라가버리는 상황이 발생하는 중
+//TODO 사용법 추가해주기
+//TODO 한글이면 닉네임 두 자부터 가능하도록 설정하기
+//TODO 닉네임 중복 어떻게 할 것인지 생각해봐야 함
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE Package명 모두 소문자로 변경 ConnectSix -> connectsix
 // DONE Dark Mode 지원 - 대기 페이지와 게임 페이지 모두 수정하기
 // DONE 두 명이 들어와있는 상태에서 한 명이 나가면 어떻게 할 지 정해야 한다.
 // DONE 게임 끝나고 서버에서 방이 없어지지 않는 오류 해결
@@ -367,10 +377,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         //TODO 이 부분은 추후에 구현할 것
-        randomGameStartButton.setOnClickListener {
-            Toast.makeText(this, "Coming soon...", Toast.LENGTH_SHORT).show()
-            //intent.putExtra("player1NickName", newNickname)
-            //startActivity(intent)
+        singlePlayButton.setOnClickListener {
+            val singlePlayerIntent = Intent(this, SinglePlayer::class.java)
+            startActivity(singlePlayerIntent)
         }
 
         //Create Game 버튼 눌렀을 때 방 생성 및 입장
