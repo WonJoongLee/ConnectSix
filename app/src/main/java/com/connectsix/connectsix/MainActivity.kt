@@ -31,8 +31,6 @@ import kotlin.coroutines.suspendCoroutine
  */
 
 //TODO 당장 해야 할 것
-//TODO 싱글플레이 모드에서 흰 돌을 먼저 착수할 때 초반 순서가 맞지 않는 에러 고쳐야 함
-//TODO 이거나 졌을 때 나오는 Dialog에서 나가기가 갑자기 숫자가 뜸
 
 //TODO 추후에 해야 할 것
 //TODO 다크모드 설정 시 화면을 다시 불러오는 문제 해결하기(싱글모드, 멀티 모드에서 모두 문제
@@ -42,6 +40,9 @@ import kotlin.coroutines.suspendCoroutine
 //TODO 닉네임 중복 어떻게 할 것인지 생각해봐야 함
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE 싱글플레이 모드에서 흰 돌을 먼저 착수할 때 초반 순서가 맞지 않는 에러 해결
+// DONE player가 닉네임을 생성하지 않으면 singleplay도 불가능하게 설정
+// DONE 이거나 졌을 때 나오는 Dialog에서 나가기가 갑자기 숫자가 뜨는 에러 해결
 // DONE Package명 모두 소문자로 변경 ConnectSix -> connectsix
 // DONE Dark Mode 지원 - 대기 페이지와 게임 페이지 모두 수정하기
 // DONE 두 명이 들어와있는 상태에서 한 명이 나가면 어떻게 할 지 정해야 한다.
@@ -127,11 +128,19 @@ class MainActivity : AppCompatActivity() {
                     PorterDuff.Mode.SRC_ATOP
                 )
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // EditText Cursor 색 설정, Dark Mode가 아닐 때는 바탕이 흰색이기 때문에 검은색으로 설정해준다.
-                    setNickName.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_black)
-                    roomNumberEdittext.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_black)
+                    setNickName.textCursorDrawable = ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.cursor_drawable_black
+                    )
+                    roomNumberEdittext.textCursorDrawable = ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.cursor_drawable_black
+                    )
                 }
-                setNickName.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.black)
-                roomNumberEdittext.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.black)
+                setNickName.backgroundTintList =
+                    ContextCompat.getColorStateList(applicationContext, R.color.black)
+                roomNumberEdittext.backgroundTintList =
+                    ContextCompat.getColorStateList(applicationContext, R.color.black)
                 welcomeSign.setTextColor(ContextCompat.getColor(applicationContext, R.color.black))
             }
 
@@ -172,11 +181,19 @@ class MainActivity : AppCompatActivity() {
                     PorterDuff.Mode.SRC_ATOP
                 )
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // EditText Cursor 색 설정, Dark Mode일 때는 바탕이 검은색이기 때문에 흰색으로 설정해준다.
-                    setNickName.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_white)
-                    roomNumberEdittext.textCursorDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.cursor_drawable_white)
+                    setNickName.textCursorDrawable = ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.cursor_drawable_white
+                    )
+                    roomNumberEdittext.textCursorDrawable = ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.cursor_drawable_white
+                    )
                 }
-                setNickName.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.white)
-                roomNumberEdittext.backgroundTintList = ContextCompat.getColorStateList(applicationContext, R.color.white)
+                setNickName.backgroundTintList =
+                    ContextCompat.getColorStateList(applicationContext, R.color.white)
+                roomNumberEdittext.backgroundTintList =
+                    ContextCompat.getColorStateList(applicationContext, R.color.white)
                 welcomeSign.setTextColor(ContextCompat.getColor(applicationContext, R.color.white))
             }
         }
@@ -379,7 +396,15 @@ class MainActivity : AppCompatActivity() {
         //TODO 이 부분은 추후에 구현할 것
         singlePlayButton.setOnClickListener {
             val singlePlayerIntent = Intent(this, SinglePlayer::class.java)
-            startActivity(singlePlayerIntent)
+            if (setNickName.visibility == VISIBLE) {
+                Toast.makeText(
+                    applicationContext,
+                    R.string.plz_set_nick,
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                startActivity(singlePlayerIntent)
+            }
         }
 
         //Create Game 버튼 눌렀을 때 방 생성 및 입장
@@ -537,7 +562,11 @@ class MainActivity : AppCompatActivity() {
                         }
                     })
             } else {
-                Toast.makeText(this, getString(R.string.check_room_num_again), Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    this,
+                    getString(R.string.check_room_num_again),
+                    Toast.LENGTH_SHORT
+                )
                     .show()
             }
         }
@@ -561,7 +590,11 @@ class MainActivity : AppCompatActivity() {
             database.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (i in snapshot.children) {
-                        println("$roomNum <= roomNum, ${i.child("roomId").toString()} <= DB data")
+                        println(
+                            "$roomNum <= roomNum, ${
+                                i.child("roomId").toString()
+                            } <= DB data"
+                        )
                         if (roomNum == i.child("roomId").value.toString()) {
                             rValue = false
                         }
@@ -755,7 +788,11 @@ class MainActivity : AppCompatActivity() {
                     Log.e("3", "3")
 
                     for (i in snapshot.children) {
-                        println("$roomNum <= roomNum, ${i.child("roomId").toString()} <= DB data")
+                        println(
+                            "$roomNum <= roomNum, ${
+                                i.child("roomId").toString()
+                            } <= DB data"
+                        )
                         if (roomNum == i.child("roomId").value.toString()) {
                             bool = false
                         }
@@ -914,7 +951,8 @@ class MainActivity : AppCompatActivity() {
                 for (i in snapshot.children) {
                     if (i.child("nickName").value.toString() == userNickName) {
                         ratio = i.child("win").value.toString().substringBefore(".").plus("/")
-                            .plus(i.child("lose").value.toString()).substringBefore(".").plus("/")
+                            .plus(i.child("lose").value.toString()).substringBefore(".")
+                            .plus("/")
                             .plus(i.child("ratio").value.toString())
                     }
                 }
@@ -930,7 +968,8 @@ class MainActivity : AppCompatActivity() {
                 for (i in snapshot.children) {
                     if (i.child("nickName").value.toString() == userNickName) {
                         ratio = i.child("win").value.toString().substringBefore(".").plus("/")
-                            .plus(i.child("lose").value.toString()).substringBefore(".").plus("/")
+                            .plus(i.child("lose").value.toString()).substringBefore(".")
+                            .plus("/")
                             .plus(i.child("ratio").value.toString())
                     }
                 }

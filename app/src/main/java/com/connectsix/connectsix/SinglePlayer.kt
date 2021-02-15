@@ -1,8 +1,12 @@
 package com.connectsix.connectsix
 
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Window
 import android.widget.Button
 import android.widget.ImageButton
@@ -25,6 +29,9 @@ class SinglePlayer : AppCompatActivity() {
         Array<IntArray>(19) { IntArray(19) } // 해당 위치에 무슨 색의 돌이 착수되었는지 확인하는 array 0 : 착수 안됨, 1 : 검은색, 2: 흰색
     var stoneCheckArray: Array<BooleanArray> =
         Array<BooleanArray>(19) { BooleanArray(19) } // 해당 위치에 돌이 착수되었는지 확인하는 array
+    var calcScoreArray = Array(19) { IntArray(19) } // 인공지능이 위험도를 판단하기 위해 점수를 계산하는 array
+
+    //인공지능 기준이므로, 인공지능이 둔 곳 주변을 +1, 사람이 둔 곳 주변을 -1로 기준한다.
     private val myNickName: String =
         SharedData.prefs.getName("nickName", "") // Shared Pref.에서 내 닉네임을 가져온다.
     private var turnNum = 1 // 지금이 몇 번째 Turn인지 알기 위한 변수입니다.
@@ -33,6 +40,10 @@ class SinglePlayer : AppCompatActivity() {
     var confirmY = -1 // 결국 좌표를 확인하기 위한 변수입니다.
     var clickStoneChanged: Boolean = false
     var turnDataList = mutableListOf<Turn>() // 지금까지 착수된 돌들을 list형태로 저장하기 위한 변수입니다.
+    var winnerStr = "" // 이긴 사람이 누구인지 dialog에 보여줄 때 필요한 String입니다.
+
+    var playerClicked = 0 // 이 변수는 사용자가 흰 돌일 때, 두 번 째 두는 것인지 확인하기 위함입니다.
+    // 두 번째 두는 것인지 확인해야 하는 이유는, 사용자가 두번 째 돌을 착수한 이후 ai도 돌을 두 개 착수해야 하기 때문입니다.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +83,7 @@ class SinglePlayer : AppCompatActivity() {
         showDialogAndChooseColor() // 사용자에게 어떤 돌로 착수하고 싶은지 선택하게 한다.
         initBoards() // 사용자가 어떤 클릭을 했는지에 따라 반응하기 위해 여러 배열들을 사용하는데
         // 그 배열들을 초기화 한다.
-        setImageClickable()
+        //setImageClickable()
 
         /*zoom out button이 눌려지면 각 button의 크기를 줄임
         * default 값은 64*/
@@ -126,7 +137,9 @@ class SinglePlayer : AppCompatActivity() {
                 val imageButton: ImageButton =
                     findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
 
-                imageButton.setOnClickListener { // 사용자가 보드 클릭 시
+                imageButton.setOnClickListener {
+
+                    /** 사용자가 보드 클릭 시*/
                     if (stoneClickCnt == 0) { // 처음 클릭한 것이면 확인하기 위해 클릭을 한 번 더하도록 유도합니다.
                         // 즉 해당 위치를 체크표시합니다.
                         setCheckStone(imageButton, i, j)
@@ -137,11 +150,17 @@ class SinglePlayer : AppCompatActivity() {
                             i // 사용자가 다시 이 위치를 클릭하는지 확인하기 위해 confirmX와 confirmY변수에 사용자가 클릭한 i,j를 저장합니다.
                         confirmY = j
                     } else if (stoneClickCnt == 1) { // 두 번째로 클릭한 것이면 해당 위치에 돌을 둡니다.
+                        playerClicked += 1
+                        println("@@@ $i, $j")
+                        for (k in turnDataList.indices) {
+                            print("(${turnDataList[k].coX}, ${turnDataList[k].coY}), ")
+                        }
+
                         if (i == confirmX && j == confirmY) { // 두 번째로 돌을 둔 곳이 같은 위치라면 해당 위치에 돌을 둡니다.
                             turnNum++ // 사용자가 클릭해서 돌을 착수했으므로 turnNum을 증가시킨다.
                             setImageClickable()
+                            //TODO 이 부분을 인공지능 쪽에도 넣어서 돌들을 바꿔줘야 할 것 같다.
                             if (turnNum >= 4) { // 세번째 전에 둔 돌들로부터 최근 돌 마크를 빼고 일반 돌로 바꿔줍니다.
-                                println("@@@ $playerColor")
                                 val coX: Int = turnDataList[turnNum - 4].coX
                                 val coY: Int = turnDataList[turnNum - 4].coY
                                 val boardFinalStone =
@@ -156,11 +175,39 @@ class SinglePlayer : AppCompatActivity() {
                                 when (turnNum % 4) {
                                     3, 2 -> {
                                         checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
-                                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                                        if (stoneColorArray[coX][coY] == 1) {
+                                            changetoOriginalStone(
+                                                targetImageButton,
+                                                "black",
+                                                coX,
+                                                coY
+                                            )
+                                        } else if (stoneColorArray[coX][coY] == 2) {
+                                            changetoOriginalStone(
+                                                targetImageButton,
+                                                "white",
+                                                coX,
+                                                coY
+                                            )
+                                        }
                                     }
                                     0, 1 -> {
                                         checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
-                                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                                        if (stoneColorArray[coX][coY] == 1) {
+                                            changetoOriginalStone(
+                                                targetImageButton,
+                                                "black",
+                                                coX,
+                                                coY
+                                            )
+                                        } else if (stoneColorArray[coX][coY] == 2) {
+                                            changetoOriginalStone(
+                                                targetImageButton,
+                                                "white",
+                                                coX,
+                                                coY
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -170,18 +217,17 @@ class SinglePlayer : AppCompatActivity() {
                             clickStoneChanged = false
                             when (turnNum % 4) {
                                 1, 0 -> { // turnNum(시도 횟수)가 4로 나눴을 때 1 또는 0이면 player 1 차례다.
-                                    if(playerColor == "black"){
+                                    if (playerColor == "black") {
                                         setStoneDependOnSize(imageButton, "black", i, j)
-                                    }else{
+                                    } else {
                                         setStoneDependOnSize(imageButton, "white", i, j)
                                     }
                                     checkStoneArray[i][j] = 1 // 지금 체크된 돌임을 명시
-
                                 }
                                 2, 3 -> { // 2,3이면 player 2 차례다
-                                    if(playerColor == "black"){
+                                    if (playerColor == "black") {
                                         setStoneDependOnSize(imageButton, "black", i, j)
-                                    }else{
+                                    } else {
                                         setStoneDependOnSize(imageButton, "white", i, j)
                                     }
                                     checkStoneArray[i][j] = 1 // 지금 체크된 돌임을 명시
@@ -200,6 +246,27 @@ class SinglePlayer : AppCompatActivity() {
                                     j
                                 )
                             ) // TurnDataList에 사용자가 어디에 착수했는지 기록합니다.
+                            judgeVictory()
+
+                            /**AI가 착수하는 부분입니다.*/
+                            //printBoard()
+                            if (playerColor == "white") { // 사용자가 흰 색일 때, 클릭을 두번 했는지 감지합니다.
+                                if (playerClicked == 2) {
+                                    checkDanger()
+                                    aiPlay()
+                                    judgeVictory()
+                                    aiPlay()
+                                    judgeVictory()
+                                    playerClicked = 0
+                                }
+                            } else if (playerColor == "black") {
+                                checkDanger()
+                                aiPlay()
+                                judgeVictory()
+                                aiPlay()
+                                judgeVictory()
+                            }
+
                         } else { // 두 번째 클릭한 위치가 다른 위치라면(다이아몬드를 옮겨야 함)
                             println("@@@@ confirm : $confirmX $confirmY")
                             checkDiamondStone[confirmX][confirmY] =
@@ -213,6 +280,12 @@ class SinglePlayer : AppCompatActivity() {
                             confirmY = j
                         }
                     }
+
+//                    /**AI가 착수하는 부분입니다.*/
+//                    printBoard()
+//                    checkDanger()
+//                    aiPlay()
+//                    aiPlay()
                 }
             }
         }
@@ -223,6 +296,7 @@ class SinglePlayer : AppCompatActivity() {
     // 최근에 둔 돌이어서 체크되었던 돌들을 체크되지 않은 일반적인 돌로 바꿔줍니다.
     private fun changetoOriginalStone(imageButton: ImageButton, color: String, i: Int, j: Int) {
         //println("%%% ${imageButton}, ${color}, ${i}, ${j}, $clickCnt")
+        Log.d("ChangetoOriginalStone", "gotin")
         when (zoomLevel) {
             16 -> { // size가 16이면
                 if (color == "white") { // 흰색 둘 차례면
@@ -362,6 +436,7 @@ class SinglePlayer : AppCompatActivity() {
     * 바둑판에 돌을 두는 함수입니다.*/
     private fun setStoneDependOnSize(imageButton: ImageButton, color: String, i: Int, j: Int) {
         //println("i : $i, j : $j")
+        println("@@@ $color")
         when (zoomLevel) {
             16 -> { // size가 16이면
                 if (color == "white") { // 흰색 둘 차례면
@@ -456,6 +531,7 @@ class SinglePlayer : AppCompatActivity() {
             }
             64 -> { // size가 64이면
                 if (color == "white") {
+                    Log.d("white", color)
                     if (i == 0 && j == 0) { // 왼쪽 상단 코너일 때
                         imageButton.setImageResource(R.drawable.left_top_corner_circle_white_check64)
                     } else if (i == 0 && j == 18) { // 오른쪽 상단 코너일 때
@@ -477,6 +553,7 @@ class SinglePlayer : AppCompatActivity() {
                     }
                     stoneColorArray[i][j] = 2
                 } else {
+                    Log.d("black", color)
                     if (i == 0 && j == 0) { // 왼쪽 상단 코너일 때
                         imageButton.setImageResource(R.drawable.left_top_corner_circle_black_check64)
                     } else if (i == 0 && j == 18) { // 오른쪽 상단 코너일 때
@@ -718,12 +795,28 @@ class SinglePlayer : AppCompatActivity() {
         d.show()
         whiteButton.setOnClickListener {
             playerColor = "white"
-            println(playerColor)
+            Log.d("playerColor", playerColor)
+            setImageClickable()
             d.dismiss()
+
+            /**사용자가 흰색을 선택했으므로 ai가 먼저 착수해야 한다.
+             * 아래 부분은 AI가 첫 수를 (8,8)에 먼저 착수하는 것이다.*/
+            //aiPlay()
+            val target = resources.getIdentifier("sBoard0909", "id", packageName)
+            val imageButton = findViewById<ImageButton>(target)
+            setStoneDependOnSize(imageButton, "black", 9, 9)
+            stoneCheckArray[9][9] = true
+            stoneColorArray[9][9] = 1
+            turnNum++
+            setImageClickable()
+            turnDataList.add(Turn("ai", turnNum.toString(), 9, 9))
         }
+
         blackButton.setOnClickListener {
             playerColor = "black"
+            Log.d("playerColor", playerColor)
             println(playerColor)
+            setImageClickable()
             d.dismiss()
         }
     }
@@ -745,7 +838,6 @@ class SinglePlayer : AppCompatActivity() {
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
-                //println("@@@$boardFinal")
 
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 val target: Int =
@@ -755,7 +847,6 @@ class SinglePlayer : AppCompatActivity() {
 
 
                 if (checkDiamondStone[i][j] == 1) {
-                    println("&&& checkdiamondStone ($i, $j) : ${checkDiamondStone[i][j]}")
                     // 해당 위치에 돌이 착수되지 않았고(위 if문 (stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2)을 만족하지 않고),
                     // 빨간 다이아몬드가 체크 되었고(checkDiamondStone[i][j]==1)
                     // 금방돌이 아니어서 체크된 돌이 아니라면 (checkStoneArray[i][j]!=1)
@@ -819,7 +910,6 @@ class SinglePlayer : AppCompatActivity() {
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
-                //println("@@@$boardFinal")
 
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 val target: Int =
@@ -828,7 +918,6 @@ class SinglePlayer : AppCompatActivity() {
                     findViewById(target) // id값(target)과 findViewById를 통해 imageButton 변수에 좌표에 해당하는 값 할당
 
                 if (checkDiamondStone[i][j] == 1) {
-                    println("&&& checkdiamondStone ($i, $j) : ${checkDiamondStone[i][j]}")
                     // 해당 위치에 돌이 착수되지 않았고(위 if문 (stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2)을 만족하지 않고),
                     // 빨간 다이아몬드가 체크 되었고(checkDiamondStone[i][j]==1)
                     // 금방돌이 아니어서 체크된 돌이 아니라면 (checkStoneArray[i][j]!=1)
@@ -893,7 +982,6 @@ class SinglePlayer : AppCompatActivity() {
                     boardAndFirstNum.plus(if (j < 10) zero.plus(j) else j.toString()) // 만약 j가 10보다 작으면 j 앞에 0을 붙이고, j가 10이상이면 그대로 j를 저장
                 //최종적으로 boardFinal에는 board0000꼴로 id가 저장되게 된다.
 
-                //println("@@@$boardFinal")
 
                 /*좌표 위치를 통해 ImageButton의 크기를 줄이는 부분*/
                 val target: Int =
@@ -904,7 +992,6 @@ class SinglePlayer : AppCompatActivity() {
 
 
                 if (checkDiamondStone[i][j] == 1) {
-                    println("&&& checkdiamondStone ($i, $j) : ${checkDiamondStone[i][j]}")
                     // 해당 위치에 돌이 착수되지 않았고(위 if문 (stoneColorArray[i][j]==1 || stoneColorArray[i][j]==2)을 만족하지 않고),
                     // 빨간 다이아몬드가 체크 되었고(checkDiamondStone[i][j]==1)
                     // 금방돌이 아니어서 체크된 돌이 아니라면 (checkStoneArray[i][j]!=1)
@@ -969,6 +1056,308 @@ class SinglePlayer : AppCompatActivity() {
             for (j in checkDiamondStone[i].indices) {
                 checkDiamondStone[i][j] = 0 // 0은 다이아몬드가 없음을 의미
             }
+        }
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                calcScoreArray[i][j] = 0 // 주위에 착수된 값이 없어서 0이다.
+            }
+        }
+    }
+
+
+    /**인공지능이 위험을 감지하는 함수입니다. TODO 아직 이 함수는 완료된 함수가 아닙니다.
+     * stoneColorArray에서 1은 black, 2는 white입니다.*/
+    private fun checkDanger() {
+
+
+        if (playerColor == "black") { // 만약 player가 검은돌이라면, 인공지능은 1이 연속된 것이 있는지 확인해야 합니다.
+            for (i in stoneColorArray.indices) {
+                for (j in stoneColorArray[i].indices) {
+                    if (i - 1 >= 0 && i + 1 < 19 && j - 1 >= 0 && j + 1 < 19 && stoneColorArray[i][j] == 1) {
+                        calcScoreArray[i - 1][j] -= 1
+                        calcScoreArray[i + 1][j] -= 1
+                        calcScoreArray[i][j - 1] -= 1
+                        calcScoreArray[i][j + 1] -= 1 // 해당 돌 주위의 값들을 모두 -1 해준다. 그 이유는 플레이어에게 유리하기 때문이다.
+                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                    if (i - 1 >= 0 && i + 1 < 19 && j - 1 >= 0 && j + 1 < 19 && stoneColorArray[i][j] == 2) {
+                        calcScoreArray[i - 1][j] += 1
+                        calcScoreArray[i + 1][j] += 1
+                        calcScoreArray[i][j - 1] += 1
+                        calcScoreArray[i][j + 1] += 1 // 해당 돌 주위의 값들을 모두 +1 해준다. 그 이유는 인공지능 주변 돌이여서 인공지능에게 유리하기 때문이다.
+                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                }
+            }
+        }
+
+
+        if (playerColor == "white") {
+            for (i in stoneColorArray.indices) {
+                for (j in stoneColorArray[i].indices) {
+                    if (i - 1 >= 0 && i + 1 < 19 && j - 1 >= 0 && j + 1 < 19 && stoneColorArray[i][j] == 1) {
+                        calcScoreArray[i - 1][j] += 1
+                        calcScoreArray[i + 1][j] += 1
+                        calcScoreArray[i][j - 1] += 1
+                        calcScoreArray[i][j + 1] += 1
+                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                    if (i - 1 >= 0 && i + 1 < 19 && j - 1 >= 0 && j + 1 < 19 && stoneColorArray[i][j] == 2) {
+                        calcScoreArray[i - 1][j] -= 1
+                        calcScoreArray[i + 1][j] -= 1
+                        calcScoreArray[i][j - 1] -= 1
+                        calcScoreArray[i][j + 1] -= 1
+                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                }
+            }
+        }
+
+
+    }
+
+    /**AI가 착수하는 부분입니다.
+     * AI는 유저가 유리한 곳에 착수해야 하므로 calcArray의 최솟값에 착수합니다. */
+    private fun aiPlay() {
+        if (playerColor == "black" && (turnNum % 4 == 1 || turnNum % 4 == 0)) { // 사용자가 검은돌일 때, 인공지능은 흰 색이므로 2,3이 인공지능 차례다.
+            //인공지능 차례가 아닐 때는 아래를  하지 않고 그냥 넘긴다.
+            return
+        }
+        var minVal = 999999999 // 최솟값을 확인하는 변수입니다.
+        var minX = 0 // 최솟값의 x좌표입니다.
+        var minY = 0 // 최솟값의 y좌표입니다.
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcScoreArray[i][j] < minVal) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    minX = i
+                    minY = j
+                    minVal = calcScoreArray[i][j]
+                }
+            }
+        }
+        val boardStr = "sBoard".plus(if (minX < 10) "0".plus(minX) else minX)
+            .plus(if (minY < 10) "0".plus(minY) else minY)
+        val target = resources.getIdentifier(boardStr, "id", packageName)
+        val imageButton = findViewById<ImageButton>(target)
+        if (playerColor == "white") setStoneDependOnSize(imageButton, "black", minX, minY)
+        else setStoneDependOnSize(imageButton, "white", minX, minY)
+        turnNum++
+        stoneCheckArray[minX][minY] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
+        if (playerColor == "black") stoneColorArray[minX][minY] =
+            2 // 만약 플레이어가 검은돌이면, 인공지능이 둔 위치에 흰색을 착수했다고 표시
+        else if (playerColor == "white") stoneColorArray[minX][minY] = 1
+        setImageClickable()
+
+        //TODO 이 부분을 수정해야 할듯, 그리고 색바꿔주는 부분이 하나 더 있는데, 그 부분을 수정해야 할 것 같음.
+        if (turnNum >= 4) { // 세번째 전에 둔 돌들로부터 최근 돌 마크를 빼고 일반 돌로 바꿔줍니다.
+
+            println()
+            val coX: Int = turnDataList[turnNum - 4].coX
+            val coY: Int = turnDataList[turnNum - 4].coY
+            val boardFinalStone =
+                "sBoard".plus(if (coX < 10) "0".plus(coX) else coX.toString())
+                    .plus(if (coY < 10) "0".plus(coY) else coY.toString())
+            //boardFinalStone에는 원래 돌로 바꿔야할 위치의 좌표값이 들어있습니다.
+            val targetStone: Int =
+                resources.getIdentifier(boardFinalStone, "id", packageName)
+            //targetStone에는 R.id.board0000 꼴로 바꿔야할 id가 들어있습니다.
+
+            val targetImageButton: ImageButton = findViewById(targetStone)
+            when (turnNum % 4) {
+                3, 2 -> {
+                    checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
+                    if (stoneColorArray[coX][coY] == 1) {
+                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                    } else if (stoneColorArray[coX][coY] == 2) {
+                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                    }
+                }
+                0, 1 -> {
+                    checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
+                    if (stoneColorArray[coX][coY] == 1) {
+                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                    } else if (stoneColorArray[coX][coY] == 2) {
+                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                    }
+                }
+            }
+        }
+
+        turnDataList.add(
+            Turn(
+                "ai",
+                turnNum.toString(),
+                minX,
+                minY
+            )
+        ) // TurnDataList에 인공지능이 어디에 착수했는지 기록합니다.
+    }
+
+
+    //어떤 돌이 착수되었는지 확인하기 위해 로그를 띄워주는 함수입니다.
+    private fun printBoard() {
+        println("---Print Board---")
+        for (i in stoneColorArray.indices) {
+            print("$i ")
+            for (j in stoneColorArray[i].indices) {
+                print("${String.format("% 5d", stoneColorArray[i][j])} ")
+            }
+            println()
+        }
+    }
+
+    private fun judgeVictory() {
+        println("@@@ JUDGEVICTORY part")
+        for (i in 0..13) { // 세로로 다 맞았을 때
+            for (j in 0..18) {
+                if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j] == 1 && stoneColorArray[i + 2][j] == 1 && stoneColorArray[i + 3][j] == 1 && stoneColorArray[i + 4][j] == 1 && stoneColorArray[i + 5][j] == 1) {
+                    winnerStr = if (playerColor == "black") "player" else "AI"
+                    println("### 1")
+                    initBoards() // 게임 승리 판정이 나면 초기화
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j] == 2 && stoneColorArray[i + 2][j] == 2 && stoneColorArray[i + 3][j] == 2 && stoneColorArray[i + 4][j] == 2 && stoneColorArray[i + 5][j] == 2) {
+                    winnerStr = if (playerColor == "white") "player" else "AI"
+                    println("### 2")
+                    //Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                }
+            }
+        }
+
+        for (j in 0..13) { // 가로로 다 맞았을 때
+            for (i in 0..18) {
+                if (stoneColorArray[i][j] == 1 && stoneColorArray[i][j + 1] == 1 && stoneColorArray[i][j + 2] == 1 && stoneColorArray[i][j + 3] == 1 && stoneColorArray[i][j + 4] == 1 && stoneColorArray[i][j + 5] == 1) {
+                    println("### 3")
+                    winnerStr = if (playerColor == "black") "player" else "AI"
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i][j + 1] == 2 && stoneColorArray[i][j + 2] == 2 && stoneColorArray[i][j + 3] == 2 && stoneColorArray[i][j + 4] == 2 && stoneColorArray[i][j + 5] == 2) {
+                    println("### 4")
+                    winnerStr = if (playerColor == "white") "player" else "AI"
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                }
+            }
+        }
+
+
+        for (j in 0..13) { // \(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
+            for (i in 0..13) {
+                if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j + 1] == 1 && stoneColorArray[i + 2][j + 2] == 1 && stoneColorArray[i + 3][j + 3] == 1 && stoneColorArray[i + 4][j + 4] == 1 && stoneColorArray[i + 5][j + 5] == 1) {
+                    println("### 5")
+                    winnerStr = if (playerColor == "black") "player" else "AI"
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j + 1] == 2 && stoneColorArray[i + 2][j + 2] == 2 && stoneColorArray[i + 3][j + 3] == 2 && stoneColorArray[i + 4][j + 4] == 2 && stoneColorArray[i + 5][j + 5] == 2) {
+                    println("### 6")
+                    winnerStr = if (playerColor == "white") "player" else "AI"
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                }
+            }
+        }
+
+        for (j in 0..13) { // /(오른쪽 위에서 왼쪽 아래) 대각선 다 맞았을 때
+            for (i in 0..13) {
+                if (stoneColorArray[19 - i - 1][j] == 1 && stoneColorArray[19 - i - 2][j + 1] == 1 && stoneColorArray[19 - i - 3][j + 2] == 1 && stoneColorArray[19 - i - 4][j + 3] == 1 && stoneColorArray[19 - i - 5][j + 4] == 1 && stoneColorArray[19 - i - 6][j + 5] == 1) {
+                    println("### 7")
+                    winnerStr = if (playerColor == "black") "player" else "AI"
+                    //Toast.makeTextthis, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                } else if (stoneColorArray[19 - i - 1][j] == 2 && stoneColorArray[19 - i - 2][j + 1] == 2 && stoneColorArray[19 - i - 3][j + 2] == 2 && stoneColorArray[19 - i - 4][j + 3] == 2 && stoneColorArray[19 - i - 5][j + 4] == 2 && stoneColorArray[19 - i - 6][j + 5] == 2) {
+                    println("### 8")
+                    winnerStr = if (playerColor == "white") "player" else "AI"
+                    initBoards()
+                    turnNum = 1
+                    showDialog(winnerStr)
+                    return
+                }
+            }
+        }
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showDialog(winnerStr: String) {
+
+        val builder = AlertDialog.Builder(this)
+        var winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+        var loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                winDialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+                loseDialogView = layoutInflater.inflate(R.layout.dialog_lose, null)
+            }
+            Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                winDialogView = layoutInflater.inflate(R.layout.dialog_win_night, null)
+                loseDialogView = layoutInflater.inflate(R.layout.dialog_lose_night, null)
+            }
+        }
+
+
+        println("### winnerStr : $winnerStr, myNickName : $myNickName")
+
+        if (winnerStr == "player" && (!this.isFinishing)) { // 만약 승리했다면,
+            //winDialogView.
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                    builder.setView(winDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            //.setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+                }
+                Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                    builder.setView(winDialogView)
+                        //.setPositiveButton("RETRY") { _, _ -> //재경기 누르면
+                        //Retry누르면 다시 원래 화면으로 돌아가면 되므로 따로 작업할 것이 없다.
+                        //}
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                }
+            }
+
+        } else if (winnerStr != "player" && (!this.isFinishing)) { // 만약 패배했다면,
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_NO -> { // Dark Mode 아닐 때
+                    builder.setView(loseDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+                }
+                Configuration.UI_MODE_NIGHT_YES -> { // Dark Mode 일 때
+                    builder.setView(loseDialogView)
+                        .setNegativeButton(getString(R.string.upper_exit)) { _, _ -> // EXIT 누르면 MainActivity로 이동
+                            finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+                        .getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                }
+            }
+
+
         }
     }
 
@@ -1041,8 +1430,8 @@ class SinglePlayer : AppCompatActivity() {
     }
 
     private fun setImageClickable() {
+        println("@@@ turnNum : $turnNum")
         if (playerColor == "black") { // 사용자가 먼저 착수 : 0,1일 때 사용자 차례
-            println("@@@ GOTIN")
             when (turnNum % 4) {
                 0, 1 -> { // 플레이어 차례
                     for (i in 0..18) {
