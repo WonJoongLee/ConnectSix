@@ -39,4 +39,5 @@
     <string name="plz_set_nick">Please Enter your nick name!</string>
     <string name="computer">AI</string>
     <string name="practice_with_ai">Play with AI</string>
+    <string name="Back">Back</string>
 </resources>

@@ -26,14 +26,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-/** Version 1.1.1 업데이트 사항!! **
+/** Version (1.1.1) 업데이트 사항!! **
  *  1. 다크모드 아닐 때, 승리 시 dialog 뜨는 부분 중 나가기의 text가 "Exit" id 값이 뜨는 오류 발생 -> 오류 수정 완료
  */
 
 //TODO 당장 해야 할 것
-//TODO SinglePlayer 모드에서 calcArr계산하는 것이 바뀌어야 할 듯. 플레이어가 착수할 때마다 기존 값에 -1, +1을 해서 값이 이상해지는 문제가 있다.
-//TODO 또한 바로바로 calcArr(check Danger)가 반영되지 않아서, 이 부분또한 수정해야줘야 할듯. 아마 checkDanger 함수 위치를 조금 바꿔주면 될 것 같다.
-//TODO 주변에 있는 돌이 몇 개 연결되어 있는지 확인하는 것은 DFS를 사용하면 될 것 같다.
+
 
 //TODO 추후에 해야 할 것
 //TODO 다크모드 설정 시 화면을 다시 불러오는 문제 해결하기(싱글모드, 멀티 모드에서 모두 문제
@@ -43,6 +41,10 @@ import kotlin.coroutines.suspendCoroutine
 //TODO 닉네임 중복 어떻게 할 것인지 생각해봐야 함
 //TODO random game start button 클릭시 랜덤하게 비어있는 방 입장 가능하도록 구현
 
+// DONE Single Player에서 수비만 하는 인공지능 추가
+// DONE SinglePlayer 모드에서 calcArr계산하는 것이 바뀌어야 할 듯. 플레이어가 착수할 때마다 기존 값에 -1, +1을 해서 값이 이상해지는 문제가 있다.
+// DONE 또한 바로바로 calcArr(check Danger)가 반영되지 않아서, 이 부분또한 수정해야줘야 할듯. 아마 checkDanger 함수 위치를 조금 바꿔주면 될 것 같다.
+// DONE 주변에 있는 돌이 몇 개 연결되어 있는지 확인하는 것은 DFS를 사용하면 될 것 같다.
 // DONE 싱글플레이 모드에서 흰 돌을 먼저 착수할 때 초반 순서가 맞지 않는 에러 해결
 // DONE player가 닉네임을 생성하지 않으면 singleplay도 불가능하게 설정
 // DONE 이거나 졌을 때 나오는 Dialog에서 나가기가 갑자기 숫자가 뜨는 에러 해결

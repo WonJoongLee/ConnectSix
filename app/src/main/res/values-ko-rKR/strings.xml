@@ -40,4 +40,5 @@
     <string name="plz_set_nick">닉네임을 입력해주세요.</string>
     <string name="computer">인공지능</string>
     <string name="practice_with_ai">AI와 연습하기</string>
+    <string name="Back">Back</string>
 </resources>
