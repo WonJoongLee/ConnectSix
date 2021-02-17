@@ -31,6 +31,9 @@ import kotlin.coroutines.suspendCoroutine
  */
 
 //TODO 당장 해야 할 것
+//TODO SinglePlayer 모드에서 calcArr계산하는 것이 바뀌어야 할 듯. 플레이어가 착수할 때마다 기존 값에 -1, +1을 해서 값이 이상해지는 문제가 있다.
+//TODO 또한 바로바로 calcArr(check Danger)가 반영되지 않아서, 이 부분또한 수정해야줘야 할듯. 아마 checkDanger 함수 위치를 조금 바꿔주면 될 것 같다.
+//TODO 주변에 있는 돌이 몇 개 연결되어 있는지 확인하는 것은 DFS를 사용하면 될 것 같다.
 
 //TODO 추후에 해야 할 것
 //TODO 다크모드 설정 시 화면을 다시 불러오는 문제 해결하기(싱글모드, 멀티 모드에서 모두 문제

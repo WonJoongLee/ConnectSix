@@ -18,6 +18,7 @@ import com.connectsix.connectsix.sharedRef.SharedData
 import kotlinx.android.synthetic.main.singleplayer_gameboard.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.zoomInButton
 import kotlinx.android.synthetic.main.twoplayer_gameboard.zoomOutButton
+import java.util.*
 
 class SinglePlayer : AppCompatActivity() {
     var playerColor = "" // 유저가 선택한 돌 색
@@ -253,6 +254,7 @@ class SinglePlayer : AppCompatActivity() {
                             if (playerColor == "white") { // 사용자가 흰 색일 때, 클릭을 두번 했는지 감지합니다.
                                 if (playerClicked == 2) {
                                     checkDanger()
+                                    printBoard()
                                     aiPlay()
                                     judgeVictory()
                                     aiPlay()
@@ -261,6 +263,7 @@ class SinglePlayer : AppCompatActivity() {
                                 }
                             } else if (playerColor == "black") {
                                 checkDanger()
+                                printBoard()
                                 aiPlay()
                                 judgeVictory()
                                 aiPlay()
@@ -296,7 +299,6 @@ class SinglePlayer : AppCompatActivity() {
     // 최근에 둔 돌이어서 체크되었던 돌들을 체크되지 않은 일반적인 돌로 바꿔줍니다.
     private fun changetoOriginalStone(imageButton: ImageButton, color: String, i: Int, j: Int) {
         //println("%%% ${imageButton}, ${color}, ${i}, ${j}, $clickCnt")
-        Log.d("ChangetoOriginalStone", "gotin")
         when (zoomLevel) {
             16 -> { // size가 16이면
                 if (color == "white") { // 흰색 둘 차례면
@@ -1066,10 +1068,11 @@ class SinglePlayer : AppCompatActivity() {
 
 
     /**인공지능이 위험을 감지하는 함수입니다. TODO 아직 이 함수는 완료된 함수가 아닙니다.
-     * stoneColorArray에서 1은 black, 2는 white입니다.*/
+     * stoneColorArray에서 1은 black, 2는 white입니다.
+     * 인공지능 입장에서 유리한 것은 +1, 불리한 것은 -1합니다.
+     * 즉 인공지능 돌 주변은 유리하다고 판단하여 +1을 하고, 사용자 돌 주변은 위험하다고 판단하여(유리하지 않다고 판단하여) -1을 합니다.*/
     private fun checkDanger() {
-
-
+        println("checkDanger")
         if (playerColor == "black") { // 만약 player가 검은돌이라면, 인공지능은 1이 연속된 것이 있는지 확인해야 합니다.
             for (i in stoneColorArray.indices) {
                 for (j in stoneColorArray[i].indices) {
@@ -1078,15 +1081,42 @@ class SinglePlayer : AppCompatActivity() {
                         calcScoreArray[i + 1][j] -= 1
                         calcScoreArray[i][j - 1] -= 1
                         calcScoreArray[i][j + 1] -= 1 // 해당 돌 주위의 값들을 모두 -1 해준다. 그 이유는 플레이어에게 유리하기 때문이다.
-                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                    }
                     if (i - 1 >= 0 && i + 1 < 19 && j - 1 >= 0 && j + 1 < 19 && stoneColorArray[i][j] == 2) {
                         calcScoreArray[i - 1][j] += 1
                         calcScoreArray[i + 1][j] += 1
                         calcScoreArray[i][j - 1] += 1
                         calcScoreArray[i][j + 1] += 1 // 해당 돌 주위의 값들을 모두 +1 해준다. 그 이유는 인공지능 주변 돌이여서 인공지능에게 유리하기 때문이다.
-                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                    }
                 }
             }
+
+//            /**세로로 다섯 개가 연결되어 있을 때*/
+//            for (i in 0..14) {
+//                for (j in 0..18) {
+//                    if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j] == 2 && stoneColorArray[i + 2][j] == 2 && stoneColorArray[i + 3][j] == 2 && stoneColorArray[i + 4][j] == 2) {
+//                        println("GotIn1")
+//                        if (i - 1 >= 0 && stoneColorArray[i - 1][j] == 0 && stoneColorArray[i + 5][j] == 0) {
+//                            calcScoreArray[i - 1][j] += 100
+//                            calcScoreArray[i + 5][j] += 100
+//                        } else if ((i == 0 || stoneColorArray[i - 1][j] == 1) && stoneColorArray[i + 5][j] == 0) {
+//                            calcScoreArray[i + 5][j] += 100
+//                        } else if ((i == 14 || stoneColorArray[i + 5][j] == 1) && stoneColorArray[i + 5][j] == 0) {
+//                            calcScoreArray[i - 1][j] += 100
+//                        }
+//                    } else if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j] == 1 && stoneColorArray[i + 2][j] == 1 && stoneColorArray[i + 3][j] == 1 && stoneColorArray[i + 4][j] == 1 && stoneColorArray[i + 5][j] == 1) {
+//                        println("GotIn2")
+//                        if (i - 1 >= 0 && stoneColorArray[i - 1][j] == 0 && stoneColorArray[i + 5][j] == 0) { // 세로로 다섯 개가 연결되어 있는데, 위 아래가 모두 뚫려있을 경우
+//                            calcScoreArray[i - 1][j] -= 100
+//                            calcScoreArray[i + 5][j] -= 100 // 위 아래를 -100해준다. 이 곳에 두지 않으면 바로 지기 때문이다.
+//                        } else if ((i == 0 || stoneColorArray[i - 1][j] == 2) && stoneColorArray[i + 5][j] == 0) { // 맨 위거나, 위 쪽만 막혀있으면 아래 족에 -100을 준다.
+//                            calcScoreArray[i + 5][j] -= 100
+//                        } else if ((i == 14 || stoneColorArray[i + 5][j] == 2) && stoneColorArray[i + 5][j] == 0) { // 맨 아래거나, 아래쪽만 막혀있으면 위 쪽에 -100을 준다.
+//                            calcScoreArray[i - 1][j] -= 100
+//                        }
+//                    }
+//                }
+//            }
         }
 
 
@@ -1098,13 +1128,13 @@ class SinglePlayer : AppCompatActivity() {
                         calcScoreArray[i + 1][j] += 1
                         calcScoreArray[i][j - 1] += 1
                         calcScoreArray[i][j + 1] += 1
-                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                    }
                     if (i - 1 >= 0 && i + 1 < 19 && j - 1 >= 0 && j + 1 < 19 && stoneColorArray[i][j] == 2) {
                         calcScoreArray[i - 1][j] -= 1
                         calcScoreArray[i + 1][j] -= 1
                         calcScoreArray[i][j - 1] -= 1
                         calcScoreArray[i][j + 1] -= 1
-                    } // i가 0일 때 등을 모두 따져줘야 하긴 함 // TODO 추후에 하기
+                    }
                 }
             }
         }
@@ -1193,10 +1223,10 @@ class SinglePlayer : AppCompatActivity() {
     //어떤 돌이 착수되었는지 확인하기 위해 로그를 띄워주는 함수입니다.
     private fun printBoard() {
         println("---Print Board---")
-        for (i in stoneColorArray.indices) {
+        for (i in calcScoreArray.indices) {
             print("$i ")
-            for (j in stoneColorArray[i].indices) {
-                print("${String.format("% 5d", stoneColorArray[i][j])} ")
+            for (j in calcScoreArray[i].indices) {
+                print("${String.format("% 5d", calcScoreArray[i][j])} ")
             }
             println()
         }
@@ -1204,88 +1234,166 @@ class SinglePlayer : AppCompatActivity() {
 
     private fun judgeVictory() {
         println("@@@ JUDGEVICTORY part")
-        for (i in 0..13) { // 세로로 다 맞았을 때
+
+        val dx = arrayOf(-1, -1, -1, 0, 1, 1, 1, 0) // 상하좌우, 대각선 총 여덟 방향 확인
+        val dy = arrayOf(-1, 0, 1, 1, 1, 0, -1, -1) // 순서는 왼쪽위(0)부터 시계방향으로 회전(0번~7번)
+
+        fun dfs(
+            x: Int, // 좌표
+            y: Int, // 좌표
+            dir: Int, // 뻗어나가는 방향
+            color: Int // 돌 색깔
+        ): Int { // 바둑판 바깥으로 나가는 것(nextX, nextY가 범위 밖으로 나가면 그냥 return -1하는 것으로 추후에 정하기)
+            var cnt = 1
+            val nextX = x + dx[dir]
+            val nextY = y + dy[dir]
+
+            // 끝 면에서 바둑판 바깥 방향으로 나가려고 하면 그냥 cnt를 반환해준다.
+            if (x == 0 && y == 0 && (dir == 0 || dir == 1 || dir == 2 || dir == 6 || dir == 7)) return cnt // 왼쪽 위 코너
+            else if (x == 18 && y == 0 && (dir == 0 || dir == 4 || dir == 5 || dir == 6 || dir == 7)) return cnt // 왼쪽 아래 코너
+            else if (x == 18 && y == 18 && (dir == 2 || dir == 3 || dir == 4 || dir == 5 || dir == 6)) return cnt // 오른쪽 아래 코너
+            else if (x == 0 && y == 18 && (dir == 0 || dir == 1 || dir == 2 || dir == 3 || dir == 4)) return cnt // 오른쪽 위 코너
+            else if (x == 0 && y in 1..17 && (dir == 0 || dir == 1 || dir == 2)) return cnt // 윗면
+            else if (x == 18 && y in 1..17 && (dir == 4 || dir == 5 || dir == 6)) return cnt // 아랫면
+            else if (x in 1..17 && y == 0 && (dir == 0 || dir == 7 || dir == 6)) return cnt // 왼쪽 면
+            else if (x in 1..17 && y == 18 && (dir == 2 || dir == 3 || dir == 4)) return cnt // 오른쪽 면
+
+            println("x : $x, y : $y, dir : $dir, nextX : $nextX, nextY : $nextY") // TODO 왼쪽 면 클릭했을 때 이상하게 나옴
+
+            //if (nextX > 0 && nextY > 0 && stoneColorArray[nextX][nextY] == color) {
+            if (stoneColorArray[nextX][nextY] == color) {
+                cnt += dfs(nextX, nextY, dir, color)
+            }
+            return cnt
+        }
+
+        for (i in 0..18) {
             for (j in 0..18) {
-                if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j] == 1 && stoneColorArray[i + 2][j] == 1 && stoneColorArray[i + 3][j] == 1 && stoneColorArray[i + 4][j] == 1 && stoneColorArray[i + 5][j] == 1) {
-                    winnerStr = if (playerColor == "black") "player" else "AI"
-                    println("### 1")
-                    initBoards() // 게임 승리 판정이 나면 초기화
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j] == 2 && stoneColorArray[i + 2][j] == 2 && stoneColorArray[i + 3][j] == 2 && stoneColorArray[i + 4][j] == 2 && stoneColorArray[i + 5][j] == 2) {
-                    winnerStr = if (playerColor == "white") "player" else "AI"
-                    println("### 2")
-                    //Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
+//                if (stoneColorArray[i][j] == 1) {
+//                    for (k in 0 until 8) {
+//                        println("cnt is ${dfs(i, j, k, 1)}")
+//                        if (dfs(i, j, k, 1) >= 6) { //i,j는 돌 위치, k는 방향, 1은 색깔
+//                            println("@@@ $i, $j sixConnected")
+//                        }
+//                    }
+//                }
+                when(stoneColorArray[i][j]){
+                    1->{
+                        for (k in 0 until 8) {
+                            println("cnt is ${dfs(i, j, k, 1)}")
+                            if (dfs(i, j, k, 1) >= 6) { //i,j는 돌 위치, k는 방향, 1은 색깔
+                                println("@@@ $i, $j sixConnected and black win")
+
+                                winnerStr = if (playerColor == "black") "player" else "AI"
+                                println("### 1")
+                                initBoards() // 게임 승리 판정이 나면 초기화
+                                turnNum = 1
+                                showDialog(winnerStr)
+                                return
+                            }
+                        }
+                    }
+                    2->{
+                        for (k in 0 until 8) {
+                            println("cnt is ${dfs(i, j, k, 2)}")
+                            if (dfs(i, j, k, 2) >= 6) { //i,j는 돌 위치, k는 방향, 1은 색깔
+                                println("@@@ $i, $j sixConnected and white win")
+
+                                winnerStr = if (playerColor == "white") "player" else "AI"
+                                println("### 2")
+                                //Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
+                                initBoards()
+                                turnNum = 1
+                                showDialog(winnerStr)
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        for (j in 0..13) { // 가로로 다 맞았을 때
-            for (i in 0..18) {
-                if (stoneColorArray[i][j] == 1 && stoneColorArray[i][j + 1] == 1 && stoneColorArray[i][j + 2] == 1 && stoneColorArray[i][j + 3] == 1 && stoneColorArray[i][j + 4] == 1 && stoneColorArray[i][j + 5] == 1) {
-                    println("### 3")
-                    winnerStr = if (playerColor == "black") "player" else "AI"
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i][j + 1] == 2 && stoneColorArray[i][j + 2] == 2 && stoneColorArray[i][j + 3] == 2 && stoneColorArray[i][j + 4] == 2 && stoneColorArray[i][j + 5] == 2) {
-                    println("### 4")
-                    winnerStr = if (playerColor == "white") "player" else "AI"
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                }
-            }
-        }
-
-
-        for (j in 0..13) { // \(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
-            for (i in 0..13) {
-                if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j + 1] == 1 && stoneColorArray[i + 2][j + 2] == 1 && stoneColorArray[i + 3][j + 3] == 1 && stoneColorArray[i + 4][j + 4] == 1 && stoneColorArray[i + 5][j + 5] == 1) {
-                    println("### 5")
-                    winnerStr = if (playerColor == "black") "player" else "AI"
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j + 1] == 2 && stoneColorArray[i + 2][j + 2] == 2 && stoneColorArray[i + 3][j + 3] == 2 && stoneColorArray[i + 4][j + 4] == 2 && stoneColorArray[i + 5][j + 5] == 2) {
-                    println("### 6")
-                    winnerStr = if (playerColor == "white") "player" else "AI"
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                }
-            }
-        }
-
-        for (j in 0..13) { // /(오른쪽 위에서 왼쪽 아래) 대각선 다 맞았을 때
-            for (i in 0..13) {
-                if (stoneColorArray[19 - i - 1][j] == 1 && stoneColorArray[19 - i - 2][j + 1] == 1 && stoneColorArray[19 - i - 3][j + 2] == 1 && stoneColorArray[19 - i - 4][j + 3] == 1 && stoneColorArray[19 - i - 5][j + 4] == 1 && stoneColorArray[19 - i - 6][j + 5] == 1) {
-                    println("### 7")
-                    winnerStr = if (playerColor == "black") "player" else "AI"
-                    //Toast.makeTextthis, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                } else if (stoneColorArray[19 - i - 1][j] == 2 && stoneColorArray[19 - i - 2][j + 1] == 2 && stoneColorArray[19 - i - 3][j + 2] == 2 && stoneColorArray[19 - i - 4][j + 3] == 2 && stoneColorArray[19 - i - 5][j + 4] == 2 && stoneColorArray[19 - i - 6][j + 5] == 2) {
-                    println("### 8")
-                    winnerStr = if (playerColor == "white") "player" else "AI"
-                    initBoards()
-                    turnNum = 1
-                    showDialog(winnerStr)
-                    return
-                }
-            }
-        }
+//        for (i in 0..13) { // 세로로 다 맞았을 때
+//            for (j in 0..18) {
+//                if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j] == 1 && stoneColorArray[i + 2][j] == 1 && stoneColorArray[i + 3][j] == 1 && stoneColorArray[i + 4][j] == 1 && stoneColorArray[i + 5][j] == 1) {
+//                    winnerStr = if (playerColor == "black") "player" else "AI"
+//                    println("### 1")
+//                    initBoards() // 게임 승리 판정이 나면 초기화
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j] == 2 && stoneColorArray[i + 2][j] == 2 && stoneColorArray[i + 3][j] == 2 && stoneColorArray[i + 4][j] == 2 && stoneColorArray[i + 5][j] == 2) {
+//                    winnerStr = if (playerColor == "white") "player" else "AI"
+//                    println("### 2")
+//                    //Toast.makeText(this, "2$winnerStr win!", Toast.LENGTH_SHORT).show()
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                }
+//            }
+//        }
+//
+//        for (j in 0..13) { // 가로로 다 맞았을 때
+//            for (i in 0..18) {
+//                if (stoneColorArray[i][j] == 1 && stoneColorArray[i][j + 1] == 1 && stoneColorArray[i][j + 2] == 1 && stoneColorArray[i][j + 3] == 1 && stoneColorArray[i][j + 4] == 1 && stoneColorArray[i][j + 5] == 1) {
+//                    println("### 3")
+//                    winnerStr = if (playerColor == "black") "player" else "AI"
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i][j + 1] == 2 && stoneColorArray[i][j + 2] == 2 && stoneColorArray[i][j + 3] == 2 && stoneColorArray[i][j + 4] == 2 && stoneColorArray[i][j + 5] == 2) {
+//                    println("### 4")
+//                    winnerStr = if (playerColor == "white") "player" else "AI"
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                }
+//            }
+//        }
+//
+//
+//        for (j in 0..13) { // \(왼쪽 위에서 오른쪽 아래) 대각선 다 맞았을 때
+//            for (i in 0..13) {
+//                if (stoneColorArray[i][j] == 1 && stoneColorArray[i + 1][j + 1] == 1 && stoneColorArray[i + 2][j + 2] == 1 && stoneColorArray[i + 3][j + 3] == 1 && stoneColorArray[i + 4][j + 4] == 1 && stoneColorArray[i + 5][j + 5] == 1) {
+//                    println("### 5")
+//                    winnerStr = if (playerColor == "black") "player" else "AI"
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                } else if (stoneColorArray[i][j] == 2 && stoneColorArray[i + 1][j + 1] == 2 && stoneColorArray[i + 2][j + 2] == 2 && stoneColorArray[i + 3][j + 3] == 2 && stoneColorArray[i + 4][j + 4] == 2 && stoneColorArray[i + 5][j + 5] == 2) {
+//                    println("### 6")
+//                    winnerStr = if (playerColor == "white") "player" else "AI"
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                }
+//            }
+//        }
+//
+//        for (j in 0..13) { // /(오른쪽 위에서 왼쪽 아래) 대각선 다 맞았을 때
+//            for (i in 0..13) {
+//                if (stoneColorArray[19 - i - 1][j] == 1 && stoneColorArray[19 - i - 2][j + 1] == 1 && stoneColorArray[19 - i - 3][j + 2] == 1 && stoneColorArray[19 - i - 4][j + 3] == 1 && stoneColorArray[19 - i - 5][j + 4] == 1 && stoneColorArray[19 - i - 6][j + 5] == 1) {
+//                    println("### 7")
+//                    winnerStr = if (playerColor == "black") "player" else "AI"
+//                    //Toast.makeTextthis, "7$winnerStr win!", Toast.LENGTH_SHORT).show()
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                } else if (stoneColorArray[19 - i - 1][j] == 2 && stoneColorArray[19 - i - 2][j + 1] == 2 && stoneColorArray[19 - i - 3][j + 2] == 2 && stoneColorArray[19 - i - 4][j + 3] == 2 && stoneColorArray[19 - i - 5][j + 4] == 2 && stoneColorArray[19 - i - 6][j + 5] == 2) {
+//                    println("### 8")
+//                    winnerStr = if (playerColor == "white") "player" else "AI"
+//                    initBoards()
+//                    turnNum = 1
+//                    showDialog(winnerStr)
+//                    return
+//                }
+//            }
+//        }
     }
 
     @SuppressLint("InflateParams")
