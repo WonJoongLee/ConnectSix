@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Window
@@ -14,12 +15,14 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.connectsix.connectsix.sharedRef.SharedData
 import kotlinx.android.synthetic.main.singleplayer_gameboard.*
 import kotlinx.android.synthetic.main.twoplayer_gameboard.zoomInButton
 import kotlinx.android.synthetic.main.twoplayer_gameboard.zoomOutButton
+import java.lang.Integer.max
 import java.util.*
 import kotlin.math.min
 
@@ -34,6 +37,8 @@ class SinglePlayer : AppCompatActivity() {
     var stoneCheckArray: Array<BooleanArray> =
         Array<BooleanArray>(19) { BooleanArray(19) } // 해당 위치에 돌이 착수되었는지 확인하는 array
     var calcScoreArray = Array(19) { IntArray(19) } // 인공지능이 위험도를 판단하기 위해 점수를 계산하는 array
+    var calcPlayerScoreArray =
+        Array(19) { IntArray(19) } // 인공지능 입장에서 사용자가 어디에 착수할 지를 예상하기 위해 만든 array다. MiniMax Algorithm에 이용된다.
 
     //인공지능 기준이므로, 인공지능이 둔 곳 주변을 +1, 사람이 둔 곳 주변을 -1로 기준한다.
     private val myNickName: String =
@@ -52,7 +57,15 @@ class SinglePlayer : AppCompatActivity() {
     val dx = arrayOf(-1, -1, -1, 0, 1, 1, 1, 0) // 상하좌우, 대각선 총 여덟 방향 확인
     val dy = arrayOf(-1, 0, 1, 1, 1, 0, -1, -1) // 순서는 왼쪽위(0)부터 시계방향으로 회전(0번~7번)
 
+    data class Point(var i: Int, var j: Int)
 
+    var min1 = Point(0, 0)
+    var min2 = Point(0, 0)
+
+    var max1 = Point(0, 0)
+    var max2 = Point(0, 0)
+
+    var aiKnowMeCnt = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -263,18 +276,24 @@ class SinglePlayer : AppCompatActivity() {
                                 if (playerClicked == 2) {
                                     checkDanger()
                                     printBoard()
-                                    aiPlay()
+                                    calcMinMax()
+                                    //aiPlay()
+                                    min1AiPlay()
                                     judgeVictory()
-                                    aiPlay()
+                                    //aiPlay()
+                                    min2AiPlay()
                                     judgeVictory()
                                     playerClicked = 0
                                 }
                             } else if (playerColor == "black") {
                                 checkDanger()
                                 printBoard()
-                                aiPlay()
+                                //aiPlay()
+                                calcMinMax()
+                                min1AiPlay()
                                 judgeVictory()
-                                aiPlay()
+                                //aiPlay()
+                                min2AiPlay()
                                 judgeVictory()
                             }
 
@@ -1062,6 +1081,11 @@ class SinglePlayer : AppCompatActivity() {
                 calcScoreArray[i][j] = 0 // 주위에 착수된 값이 없어서 0이다.
             }
         }
+        for (i in calcPlayerScoreArray.indices) {
+            for (j in calcPlayerScoreArray[i].indices) {
+                calcPlayerScoreArray[i][j] = 0 // 주위에 착수된 값이 없어서 0이다.
+            }
+        }
     }
 
 
@@ -1076,7 +1100,7 @@ class SinglePlayer : AppCompatActivity() {
                 for (j in 0..18) {
                     for (k in 0 until 8) {
 
-                        // 끝 면에서 바둑판 바깥 방향으로 나가려고 하면 그냥 cnt를 반환해준다.
+                        // 끝 면에서 바둑판 바깥 방향으로 나가려고 하면 continue해서 다음 값 계산으로 넘깁니다.
                         if (i == 0 && j == 0 && (k == 2 || k == 3 || k == 4 || k == 5 || k == 6)) continue // 왼쪽 위 코너
                         else if (i == 18 && j == 0 && (k == 0 || k == 1 || k == 2 || k == 3 || k == 4)) continue // 왼쪽 아래 코너
                         else if (i == 18 && j == 18 && (k == 0 || k == 1 || k == 2 || k == 6 || k == 7)) continue // 오른쪽 아래 코너
@@ -1086,131 +1110,191 @@ class SinglePlayer : AppCompatActivity() {
                         else if (i in 1..17 && j == 0 && (k == 2 || k == 3 || k == 4)) continue // 왼쪽 면
                         else if (i in 1..17 && j == 18 && (k == 0 || k == 7 || k == 6)) continue // 오른쪽 면
 
+                        /**
+                         * AI 입장에서 유리한 값을 -로 나타내며, 사용자에게 유리한 값을 +로 나타낸다.
+                         * 이 부분은 AI가 착수해야 할 곳을 판단하는 부분이다.
+                         * calcScore에서는 calcScoreArray(AI가 유리한 곳 판단하는 배열, -)와
+                         * calcPlayerScoreArray(사용자가 유리한 곳을 판단하는 배열, +)에 가중치를 입력합니다.
+                         * */
                         if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 1) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-1, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-1, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-1, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-1, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-1, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-1, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-1, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-1, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -1)
+                                1 -> calcScore(i + 1, j, -1)
+                                2 -> calcScore(i + 1, j - 1, -1)
+                                3 -> calcScore(i, j - 1, -1)
+                                4 -> calcScore(i - 1, j - 1, -1)
+                                5 -> calcScore(i - 1, j, -1)
+                                6 -> calcScore(i - 1, j + 1, -1)
+                                7 -> calcScore(i, j + 1, -1)
                             }
                         } else if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 2) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-5, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-5, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-5, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-5, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-5, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-5, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-5, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-5, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -5)
+                                1 -> calcScore(i + 1, j, -5)
+                                2 -> calcScore(i + 1, j - 1, -5)
+                                3 -> calcScore(i, j - 1, -5)
+                                4 -> calcScore(i - 1, j - 1, -5)
+                                5 -> calcScore(i - 1, j, -5)
+                                6 -> calcScore(i - 1, j + 1, -5)
+                                7 -> calcScore(i, j + 1, -5)
                             }
                         } else if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 3) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-10, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-10, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-10, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-10, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-10, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-10, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-10, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-10, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -10)
+                                1 -> calcScore(i + 1, j, -10)
+                                2 -> calcScore(i + 1, j - 1, -10)
+                                3 -> calcScore(i, j - 1, -10)
+                                4 -> calcScore(i - 1, j - 1, -10)
+                                5 -> calcScore(i - 1, j, -10)
+                                6 -> calcScore(i - 1, j + 1, -10)
+                                7 -> calcScore(i, j + 1, -10)
                             }
                         } else if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 4) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-50, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-50, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-50, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-50, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-50, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-50, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-50, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-50, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -50)
+                                1 -> calcScore(i + 1, j, -50)
+                                2 -> calcScore(i + 1, j - 1, -50)
+                                3 -> calcScore(i, j - 1, -50)
+                                4 -> calcScore(i - 1, j - 1, -50)
+                                5 -> calcScore(i - 1, j, -50)
+                                6 -> calcScore(i - 1, j + 1, -50)
+                                7 -> calcScore(i, j + 1, -50)
+                            }
+                            when (k) {
+                                0 -> calcScore(i + 1, j + 1, -50)
+                                1 -> calcScore(i + 1, j, -50)
+                                2 -> calcScore(i + 1, j - 1, -50)
+                                3 -> calcScore(i, j - 1, -50)
+                                4 -> calcScore(i - 1, j - 1, -50)
+                                5 -> calcScore(i - 1, j, -50)
+                                6 -> calcScore(i - 1, j + 1, -50)
+                                7 -> calcScore(i, j + 1, -50)
                             }
                         } else if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 5) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-100, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-100, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-100, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-100, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-100, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-100, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-100, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-100, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -100)
+                                1 -> calcScore(i + 1, j, -100)
+                                2 -> calcScore(i + 1, j - 1, -100)
+                                3 -> calcScore(i, j - 1, -100)
+                                4 -> calcScore(i - 1, j - 1, -100)
+                                5 -> calcScore(i - 1, j, -100)
+                                6 -> calcScore(i - 1, j + 1, -100)
+                                7 -> calcScore(i, j + 1, -100)
                             }
                         }
 
                         // ai색(여기서는 흰 색)이 연속적으로 다섯 개가 연결되어 있고 위 또는 아래가 비어 있을 때 바로 착수할 수 있도록 가중치를 매우 낮게 잡습니다.
                         if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 5) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-150, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-150, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-150, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-150, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-150, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-150, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-150, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-150, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -150)
+                                1 -> calcScore(i + 1, j, -150)
+                                2 -> calcScore(i + 1, j - 1, -150)
+                                3 -> calcScore(i, j - 1, -150)
+                                4 -> calcScore(i - 1, j - 1, -150)
+                                5 -> calcScore(i - 1, j, -150)
+                                6 -> calcScore(i - 1, j + 1, -150)
+                                7 -> calcScore(i, j + 1, -150)
                             }
                         } else if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 4) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-40, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-40, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-40, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-40, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-40, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-40, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-40, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-40, calcScoreArray[i][j + 1])
+                                0 -> {
+                                    if (i + 2 < 19 && j + 2 < 19 && stoneColorArray[i + 2][j + 2] == 0 && stoneColorArray[i + 1][j + 1] == 0) {
+                                        // 네 개가 연속적으로 이어져 있고 방향 k로 두 칸이 더 비어 있을 때 그 쪽으로 두 돌을 착수하여 게임을 끝낼 수 있다.
+                                        // 그러므로 해당 위치에 -150을 주어 바로 게임을 끝낼 수 있게 한다.
+                                        calcScore(i + 1, j + 1, -150)
+                                        calcScore(i + 2, j + 2, -150)
+                                    } else if (i + 2 < 19 && j + 2 < 19 && stoneColorArray[i + 2][j + 2] == 0 && (stoneColorArray[i + 1][j + 1] == 1 || stoneColorArray[i + 1][j + 1] == 2)) {
+                                        // 만약 네 개가 연결되어 있었는데 양 쪽 모두 막혀 있다면, 이전에 -150으로 설정해주었던 부분을 다시 0으로 되돌려 놓는다.
+                                        // 해당 위치에 돌이 있으므로 0이되어도 상관 없다.
+                                        // stoneColorArray[i+1][j+1]이 1 또는 2여도 상관 없다. 이미 위에서 5개짜리는 처리가 되므로 무조건 상대돌이 오기 때문이다.
+                                        calcScore(i + 2, j + 2, 0)
+                                    } else {
+                                        calcScore(i + 1, j + 1, -40)
+                                    }
+                                }
+                                1 -> {
+                                    if (i + 2 < 19 && stoneColorArray[i + 2][j] == 0 && stoneColorArray[i + 1][j] == 0) {
+                                        calcScore(i + 1, j, -150)
+                                        calcScore(i + 2, j, -150)
+                                    } else if (i + 2 < 19 && stoneColorArray[i + 2][j] == 0 && (stoneColorArray[i + 1][j] == 1 || stoneColorArray[i + 1][j] == 2)) {
+                                        calcScore(i + 2, j, 0)
+                                    } else {
+                                        calcScore(i + 1, j, -40)
+                                    }
+                                }
+                                2 -> {
+                                    if (i + 2 < 19 && j - 2 >= 0 && stoneColorArray[i + 2][j - 2] == 0 && stoneColorArray[i + 1][j - 1] == 0) {
+                                        calcScore(i + 1, j - 1, -150)
+                                        calcScore(i + 2, j - 2, -150)
+                                    } else if (i + 2 < 19 && j - 2 >= 0 && stoneColorArray[i + 2][j - 2] == 0 && (stoneColorArray[i + 1][j - 1] == 1 || stoneColorArray[i + 1][j - 1] == 2)) {
+                                        calcScore(i + 2, j - 2, 0)
+                                    } else {
+                                        calcScore(i + 1, j - 1, -40)
+                                    }
+                                }
+                                3 -> {
+                                    if (j - 2 >= 0 && stoneColorArray[i][j - 2] == 0 && stoneColorArray[i][j - 1] == 0) {
+                                        calcScore(i, j - 1, -150)
+                                        calcScore(i, j - 2, -150)
+                                    } else if (j - 2 >= 0 && stoneColorArray[i][j - 2] == 0 && (stoneColorArray[i][j - 1] == 1 || stoneColorArray[i][j - 1] == 2)) {
+                                        calcScore(i, j - 2, 0)
+                                    } else {
+                                        calcScore(i, j - 1, -40)
+                                    }
+                                }
+                                4 -> {
+                                    if (i - 2 >= 0 && j - 2 >= 0 && stoneColorArray[i - 2][j - 2] == 0 && stoneColorArray[i - 1][j - 1] == 0) {
+                                        calcScore(i - 1, j - 1, -150)
+                                        calcScore(i - 2, j - 2, -150)
+                                    } else if (i - 2 >= 0 && j - 2 >= 0 && stoneColorArray[i - 2][j - 2] == 0 && (stoneColorArray[i - 1][j - 1] == 1 || stoneColorArray[i - 1][j - 1] == 2)) {
+                                        calcScore(i - 2, j - 2, 0)
+                                    } else {
+                                        calcScore(i - 1, j - 1, -40)
+                                    }
+                                }
+                                5 -> {
+                                    if (i - 2 >= 0 && stoneColorArray[i - 2][j] == 0 && stoneColorArray[i - 1][j] == 0) {
+                                        calcScore(i - 1, j, -150)
+                                        calcScore(i - 2, j, -150)
+                                    } else if (i - 2 >= 0 && stoneColorArray[i - 2][j] == 0 && (stoneColorArray[i - 1][j] == 1 || stoneColorArray[i - 1][j] == 2)) {
+                                        calcScore(i - 2, j, 0)
+                                    } else {
+                                        calcScore(i - 1, j, -40)
+                                    }
+                                }
+                                6 -> {
+                                    if (i - 2 >= 0 && j + 2 < 19 && stoneColorArray[i - 2][j + 2] == 0 && stoneColorArray[i - 1][j + 1] == 0) {
+                                        calcScore(i - 1, j + 1, -150)
+                                        calcScore(i - 2, j + 2, -150)
+                                    } else if (i - 2 >= 0 && j + 2 < 19 && stoneColorArray[i - 2][j + 2] == 0 && (stoneColorArray[i - 1][j + 1] == 1 || stoneColorArray[i - 1][j + 1] == 2)) {
+                                        calcScore(i - 2, j + 2, 0)
+                                    } else {
+                                        calcScore(i - 1, j + 1, -40)
+                                    }
+                                }
+                                7 -> {
+                                    if (j + 2 < 19 && stoneColorArray[i][j + 2] == 0 && stoneColorArray[i][j + 1] == 0) {
+                                        calcScore(i, j + 1, -150)
+                                        calcScore(i, j + 2, -150)
+                                    } else if (j + 2 < 19 && stoneColorArray[i][j + 2] == 0 && (stoneColorArray[i][j + 1] == 1 || stoneColorArray[i][j + 1] == 2)) {
+                                        calcScore(i, j + 2, 0)
+                                    } else {
+                                        calcScore(i, j + 1, -40)
+                                    }
+                                }
                             }
                         } else if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 3) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-20, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-20, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-20, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-20, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-20, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-20, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-20, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-20, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -20)
+                                1 -> calcScore(i + 1, j, -20)
+                                2 -> calcScore(i + 1, j - 1, -20)
+                                3 -> calcScore(i, j - 1, -20)
+                                4 -> calcScore(i - 1, j - 1, -20)
+                                5 -> calcScore(i - 1, j, -20)
+                                6 -> calcScore(i - 1, j + 1, -20)
+                                7 -> calcScore(i, j + 1, -20)
                             }
                         }
-
 
                     }
                 }
@@ -1221,126 +1305,171 @@ class SinglePlayer : AppCompatActivity() {
                     for (k in 0 until 8) {
                         if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 1) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-1, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-1, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-1, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-1, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-1, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-1, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-1, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-1, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -1)
+                                1 -> calcScore(i + 1, j, -1)
+                                2 -> calcScore(i + 1, j - 1, -1)
+                                3 -> calcScore(i, j - 1, -1)
+                                4 -> calcScore(i - 1, j - 1, -1)
+                                5 -> calcScore(i - 1, j, -1)
+                                6 -> calcScore(i - 1, j + 1, -1)
+                                7 -> calcScore(i, j + 1, -1)
                             }
                         } else if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 2) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-5, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-5, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-5, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-5, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-5, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-5, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-5, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-5, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -5)
+                                1 -> calcScore(i + 1, j, -5)
+                                2 -> calcScore(i + 1, j - 1, -5)
+                                3 -> calcScore(i, j - 1, -5)
+                                4 -> calcScore(i - 1, j - 1, -5)
+                                5 -> calcScore(i - 1, j, -5)
+                                6 -> calcScore(i - 1, j + 1, -5)
+                                7 -> calcScore(i, j + 1, -5)
                             }
                         } else if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 3) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-10, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-10, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-10, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-10, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-10, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-10, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-10, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-10, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -10)
+                                1 -> calcScore(i + 1, j, -10)
+                                2 -> calcScore(i + 1, j - 1, -10)
+                                3 -> calcScore(i, j - 1, -10)
+                                4 -> calcScore(i - 1, j - 1, -10)
+                                5 -> calcScore(i - 1, j, -10)
+                                6 -> calcScore(i - 1, j + 1, -10)
+                                7 -> calcScore(i, j + 1, -10)
                             }
                         } else if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 4) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-50, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-50, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-50, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-50, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-50, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-50, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-50, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-50, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -50)
+                                1 -> calcScore(i + 1, j, -50)
+                                2 -> calcScore(i + 1, j - 1, -50)
+                                3 -> calcScore(i, j - 1, -50)
+                                4 -> calcScore(i - 1, j - 1, -50)
+                                5 -> calcScore(i - 1, j, -50)
+                                6 -> calcScore(i - 1, j + 1, -50)
+                                7 -> calcScore(i, j + 1, -50)
                             }
                         } else if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 5) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-100, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-100, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-100, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-100, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-100, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-100, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-100, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-100, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -100)
+                                1 -> calcScore(i + 1, j, -100)
+                                2 -> calcScore(i + 1, j - 1, -100)
+                                3 -> calcScore(i, j - 1, -100)
+                                4 -> calcScore(i - 1, j - 1, -100)
+                                5 -> calcScore(i - 1, j, -100)
+                                6 -> calcScore(i - 1, j + 1, -100)
+                                7 -> calcScore(i, j + 1, -100)
                             }
                         }
 
                         // ai색(여기서는 흰 색)이 연속적으로 다섯 개가 연결되어 있고 위 또는 아래가 비어 있을 때 바로 착수할 수 있도록 가중치를 매우 낮게 잡습니다.
                         if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 5) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-150, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-150, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-150, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-150, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-150, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-150, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-150, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-150, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -150)
+                                1 -> calcScore(i + 1, j, -150)
+                                2 -> calcScore(i + 1, j - 1, -150)
+                                3 -> calcScore(i, j - 1, -150)
+                                4 -> calcScore(i - 1, j - 1, -150)
+                                5 -> calcScore(i - 1, j, -150)
+                                6 -> calcScore(i - 1, j + 1, -150)
+                                7 -> calcScore(i, j + 1, -150)
                             }
                         } else if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 4) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-40, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-40, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-40, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-40, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-40, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-40, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-40, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-40, calcScoreArray[i][j + 1])
+                                0 -> {
+                                    if (i + 2 < 19 && j + 2 < 19 && stoneColorArray[i + 2][j + 2] == 0 && stoneColorArray[i + 1][j + 1] == 0) {
+                                        // 네 개가 연속적으로 이어져 있고 방향 k로 두 칸이 더 비어 있을 때 그 쪽으로 두 돌을 착수하여 게임을 끝낼 수 있다.
+                                        // 그러므로 해당 위치에 -150을 주어 바로 게임을 끝낼 수 있게 한다.
+                                        calcScore(i + 1, j + 1, -150)
+                                        calcScore(i + 2, j + 2, -150)
+                                    } else if (i + 2 < 19 && j + 2 < 19 && stoneColorArray[i + 2][j + 2] == 0 && (stoneColorArray[i + 1][j + 1] == 1 || stoneColorArray[i + 1][j + 1] == 2)) {
+                                        // 만약 네 개가 연결되어 있었는데 양 쪽 모두 막혀 있다면, 이전에 -150으로 설정해주었던 부분을 다시 0으로 되돌려 놓는다.
+                                        // 해당 위치에 돌이 있으므로 0이되어도 상관 없다.
+                                        // stoneColorArray[i+1][j+1]이 1 또는 2여도 상관 없다. 이미 위에서 5개짜리는 처리가 되므로 무조건 상대돌이 오기 때문이다.
+                                        calcScore(i + 2, j + 2, 0)
+                                    } else {
+                                        calcScore(i + 1, j + 1, -40)
+                                    }
+                                }
+                                1 -> {
+                                    if (i + 2 < 19 && stoneColorArray[i + 2][j] == 0 && stoneColorArray[i + 1][j] == 0) {
+                                        calcScore(i + 1, j, -150)
+                                        calcScore(i + 2, j, -150)
+                                    } else if (i + 2 < 19 && stoneColorArray[i + 2][j] == 0 && (stoneColorArray[i + 1][j] == 1 || stoneColorArray[i + 1][j] == 2)) {
+                                        calcScore(i + 2, j, 0)
+                                    } else {
+                                        calcScore(i + 1, j, -40)
+                                    }
+                                }
+                                2 -> {
+                                    if (i + 2 < 19 && j - 2 >= 0 && stoneColorArray[i + 2][j - 2] == 0 && stoneColorArray[i + 1][j - 1] == 0) {
+                                        calcScore(i + 1, j - 1, -150)
+                                        calcScore(i + 2, j - 2, -150)
+                                    } else if (i + 2 < 19 && j - 2 >= 0 && stoneColorArray[i + 2][j - 2] == 0 && (stoneColorArray[i + 1][j - 1] == 1 || stoneColorArray[i + 1][j - 1] == 2)) {
+                                        calcScore(i + 2, j - 2, 0)
+                                    } else {
+                                        calcScore(i + 1, j - 1, -40)
+                                    }
+                                }
+                                3 -> {
+                                    if (j - 2 >= 0 && stoneColorArray[i][j - 2] == 0 && stoneColorArray[i][j - 1] == 0) {
+                                        calcScore(i, j - 1, -150)
+                                        calcScore(i, j - 2, -150)
+                                    } else if (j - 2 >= 0 && stoneColorArray[i][j - 2] == 0 && (stoneColorArray[i][j - 1] == 1 || stoneColorArray[i][j - 1] == 2)) {
+                                        calcScore(i, j - 2, 0)
+                                    } else {
+                                        calcScore(i, j - 1, -40)
+                                    }
+                                }
+                                4 -> {
+                                    if (i - 2 >= 0 && j - 2 >= 0 && stoneColorArray[i - 2][j - 2] == 0 && stoneColorArray[i - 1][j - 1] == 0) {
+                                        calcScore(i - 1, j - 1, -150)
+                                        calcScore(i - 2, j - 2, -150)
+                                    } else if (i - 2 >= 0 && j - 2 >= 0 && stoneColorArray[i - 2][j - 2] == 0 && (stoneColorArray[i - 1][j - 1] == 1 || stoneColorArray[i - 1][j - 1] == 2)) {
+                                        calcScore(i - 2, j - 2, 0)
+                                    } else {
+                                        calcScore(i - 1, j - 1, -40)
+                                    }
+                                }
+                                5 -> {
+                                    if (i - 2 >= 0 && stoneColorArray[i - 2][j] == 0 && stoneColorArray[i - 1][j] == 0) {
+                                        calcScore(i - 1, j, -150)
+                                        calcScore(i - 2, j, -150)
+                                    } else if (i - 2 >= 0 && stoneColorArray[i - 2][j] == 0 && (stoneColorArray[i - 1][j] == 1 || stoneColorArray[i - 1][j] == 2)) {
+                                        calcScore(i - 2, j, 0)
+                                    } else {
+                                        calcScore(i - 1, j, -40)
+                                    }
+                                }
+                                6 -> {
+                                    if (i - 2 >= 0 && j + 2 < 19 && stoneColorArray[i - 2][j + 2] == 0 && stoneColorArray[i - 1][j + 1] == 0) {
+                                        calcScore(i - 1, j + 1, -150)
+                                        calcScore(i - 2, j + 2, -150)
+                                    } else if (i - 2 >= 0 && j + 2 < 19 && stoneColorArray[i - 2][j + 2] == 0 && (stoneColorArray[i - 1][j + 1] == 1 || stoneColorArray[i - 1][j + 1] == 2)) {
+                                        calcScore(i - 2, j + 2, 0)
+                                    } else {
+                                        calcScore(i - 1, j + 1, -40)
+                                    }
+                                }
+                                7 -> {
+                                    if (j + 2 < 19 && stoneColorArray[i][j + 2] == 0 && stoneColorArray[i][j + 1] == 0) {
+                                        calcScore(i, j + 1, -150)
+                                        calcScore(i, j + 2, -150)
+                                    } else if (j + 2 < 19 && stoneColorArray[i][j + 2] == 0 && (stoneColorArray[i][j + 1] == 1 || stoneColorArray[i][j + 1] == 2)) {
+                                        calcScore(i, j + 2, 0)
+                                    } else {
+                                        calcScore(i, j + 1, -40)
+                                    }
+                                }
                             }
                         } else if (stoneColorArray[i][j] == 1 && countStone(i, j, k, 1) == 3) {
                             when (k) {
-                                0 -> calcScoreArray[i + 1][j + 1] =
-                                    min(-20, calcScoreArray[i + 1][j + 1])
-                                1 -> calcScoreArray[i + 1][j] = min(-20, calcScoreArray[i + 1][j])
-                                2 -> calcScoreArray[i + 1][j - 1] =
-                                    min(-20, calcScoreArray[i + 1][j - 1])
-                                3 -> calcScoreArray[i][j - 1] = min(-20, calcScoreArray[i][j - 1])
-                                4 -> calcScoreArray[i - 1][j - 1] =
-                                    min(-20, calcScoreArray[i - 1][j - 1])
-                                5 -> calcScoreArray[i - 1][j] = min(-20, calcScoreArray[i - 1][j])
-                                6 -> calcScoreArray[i - 1][j + 1] =
-                                    min(-20, calcScoreArray[i - 1][j + 1])
-                                7 -> calcScoreArray[i][j + 1] = min(-20, calcScoreArray[i][j + 1])
+                                0 -> calcScore(i + 1, j + 1, -20)
+                                1 -> calcScore(i + 1, j, -20)
+                                2 -> calcScore(i + 1, j - 1, -20)
+                                3 -> calcScore(i, j - 1, -20)
+                                4 -> calcScore(i - 1, j - 1, -20)
+                                5 -> calcScore(i - 1, j, -20)
+                                6 -> calcScore(i - 1, j + 1, -20)
+                                7 -> calcScore(i, j + 1, -20)
                             }
                         }
                     }
@@ -1349,25 +1478,96 @@ class SinglePlayer : AppCompatActivity() {
         }
     }
 
+    /**
+     * 보드를 분석하는 부분 중 보드에 값들을 입력하는 함수입니다.
+     * */
+    private fun calcScore(i: Int, j: Int, score: Int) {
+        //val playerBoardScore = -score
+        calcScoreArray[i][j] = min(score, calcScoreArray[i][j])
+        calcPlayerScoreArray[i][j] = kotlin.math.max(-score, calcPlayerScoreArray[i][j])
+    }
+
+    /**
+     * ai가 착수하기 위해서 제일 작은 값과 그 다음으로 작은 값,
+     * 제일 큰 값과, 그 다음으로 큰 값 총 네 개를 구하는 부분입니다.
+     * 이는 MinMax Algorithm에 사용될 수 있습니다.
+     * */
+    private fun calcMinMax() {
+        var min1Val = 999999999
+        var min2Val = 999999999
+
+        var max1Val = -999999999
+        var max2Val = -999999999
+
+        //제일 작은 값 min1Val구하는 부분
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcScoreArray[i][j] < min1Val) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    min1.i = i
+                    min1.j = j
+                    min1Val = calcScoreArray[i][j]
+                }
+            }
+        }
+
+        //두번 째로 작은 값 min2Val구하는 부분
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcScoreArray[i][j] < min2Val) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    if (i == min1.i && j == min1.j) continue // min1보다 작은 것을 구해야 하므로 continue한다.
+                    min2.i = i
+                    min2.j = j
+                    min2Val = calcScoreArray[i][j]
+                }
+            }
+        }
+
+        //제일 큰 값 max1Val 구하는 부분
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcPlayerScoreArray[i][j] > max1Val) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    //if (((max1.i == min1.i) && (max1.j == min1.j)) || ((max1.i == min2.i) && (max1.j == min2.j))) continue
+                    // 최솟값으로 두려고 예정 된 곳이면 continue한다.
+                    max1.i = i
+                    max1.j = j
+                    max1Val = calcPlayerScoreArray[i][j]
+                }
+            }
+        }
+
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcPlayerScoreArray[i][j] > max2Val) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    if (((max1.i == min1.i) && (max1.j == min1.j)) || ((max1.i == min2.i) && (max1.j == min2.j)) || (i == max1.i && j == max1.j)) continue
+                    // 이미 max1에 둔 값이거나 최솟값으로 두려고 예정 된 곳이면 continue한다.
+                    if (i == max1.i && j == max1.j) continue // min1보다 작은 것을 구해야 하므로 continue한다.
+                    max2.i = i
+                    max2.j = j
+                    max2Val = calcPlayerScoreArray[i][j]
+                }
+            }
+        }
+    }
+
     /**AI가 착수하는 부분입니다.
      * AI는 유저가 유리한 곳에 착수해야 하므로 calcArray의 최솟값에 착수합니다. */
-    private fun aiPlay() {
+    private fun min1AiPlay() {
         if (playerColor == "black" && (turnNum % 4 == 1 || turnNum % 4 == 0)) { // 사용자가 검은돌일 때, 인공지능은 흰 색이므로 2,3이 인공지능 차례다.
             //인공지능 차례가 아닐 때는 아래를  하지 않고 그냥 넘긴다.
             return
         }
-        var minVal = 999999999 // 최솟값을 확인하는 변수입니다.
-        var minX = 0 // 최솟값의 x좌표입니다.
-        var minY = 0 // 최솟값의 y좌표입니다.
-        for (i in calcScoreArray.indices) {
-            for (j in calcScoreArray[i].indices) {
-                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcScoreArray[i][j] < minVal) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
-                    minX = i
-                    minY = j
-                    minVal = calcScoreArray[i][j]
-                }
-            }
-        }
+
+        Log.e(
+            "MIN",
+            "minx1 : ${min1.i}, miny1 : ${min1.j}, minx2 : ${min2.i}, miny2 : ${min2.j}, min1Val : ${calcScoreArray[min1.i][min1.j]}, min2Val : ${calcScoreArray[min2.i][min2.j]}"
+        )
+        Log.e(
+            "MAX",
+            "maxx1 : ${max1.i}, maxy1 : ${max1.j}, maxx2 : ${max2.i}, maxy2 : ${max2.j}, max1Val : ${calcPlayerScoreArray[max1.i][max1.j]}, max2Val : ${calcScoreArray[max2.i][max2.j]}"
+        )
+
+        val minX = min1.i
+        val minY = min1.j
         val boardStr = "sBoard".plus(if (minX < 10) "0".plus(minX) else minX)
             .plus(if (minY < 10) "0".plus(minY) else minY)
         val target = resources.getIdentifier(boardStr, "id", packageName)
@@ -1428,16 +1628,182 @@ class SinglePlayer : AppCompatActivity() {
         ) // TurnDataList에 인공지능이 어디에 착수했는지 기록합니다.
     }
 
+    private fun min2AiPlay() {
+        if (playerColor == "black" && (turnNum % 4 == 1 || turnNum % 4 == 0)) { // 사용자가 검은돌일 때, 인공지능은 흰 색이므로 2,3이 인공지능 차례다.
+            //인공지능 차례가 아닐 때는 아래를  하지 않고 그냥 넘긴다.
+            return
+        }
+        val minX = min2.i
+        val minY = min2.j
+
+        val boardStr = "sBoard".plus(if (minX < 10) "0".plus(minX) else minX)
+            .plus(if (minY < 10) "0".plus(minY) else minY)
+        val target = resources.getIdentifier(boardStr, "id", packageName)
+        val imageButton = findViewById<ImageButton>(target)
+        var soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
+        var soundID = soundPool.load(this, R.raw.sound_stone, 1)
+        soundPool.play(soundID, 1f, 1f, 0, 0, 1f);    // 돌 두는 소리가 나는 부분입니다
+        if (playerColor == "white") setStoneDependOnSize(imageButton, "black", minX, minY)
+        else setStoneDependOnSize(imageButton, "white", minX, minY)
+        turnNum++
+        stoneCheckArray[minX][minY] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
+        if (playerColor == "black") stoneColorArray[minX][minY] =
+            2 // 만약 플레이어가 검은돌이면, 인공지능이 둔 위치에 흰색을 착수했다고 표시
+        else if (playerColor == "white") stoneColorArray[minX][minY] = 1
+        setImageClickable()
+
+        //TODO 이 부분을 수정해야 할듯, 그리고 색바꿔주는 부분이 하나 더 있는데, 그 부분을 수정해야 할 것 같음.
+        if (turnNum >= 4) { // 세번째 전에 둔 돌들로부터 최근 돌 마크를 빼고 일반 돌로 바꿔줍니다.
+
+            println()
+            val coX: Int = turnDataList[turnNum - 4].coX
+            val coY: Int = turnDataList[turnNum - 4].coY
+            val boardFinalStone =
+                "sBoard".plus(if (coX < 10) "0".plus(coX) else coX.toString())
+                    .plus(if (coY < 10) "0".plus(coY) else coY.toString())
+            //boardFinalStone에는 원래 돌로 바꿔야할 위치의 좌표값이 들어있습니다.
+            val targetStone: Int =
+                resources.getIdentifier(boardFinalStone, "id", packageName)
+
+            val targetImageButton: ImageButton = findViewById(targetStone)
+            when (turnNum % 4) {
+                3, 2 -> {
+                    checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
+                    if (stoneColorArray[coX][coY] == 1) {
+                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                    } else if (stoneColorArray[coX][coY] == 2) {
+                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                    }
+                }
+                0, 1 -> {
+                    checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
+                    if (stoneColorArray[coX][coY] == 1) {
+                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                    } else if (stoneColorArray[coX][coY] == 2) {
+                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                    }
+                }
+            }
+        }
+
+        turnDataList.add(
+            Turn(
+                "ai",
+                turnNum.toString(),
+                minX,
+                minY
+            )
+        ) // TurnDataList에 인공지능이 어디에 착수했는지 기록합니다.
+    }
+
+    /**AI가 착수하는 부분입니다.
+     * AI는 유저가 유리한 곳에 착수해야 하므로 calcArray의 최솟값에 착수합니다. */
+    private fun aiPlay() {
+        if (playerColor == "black" && (turnNum % 4 == 1 || turnNum % 4 == 0)) { // 사용자가 검은돌일 때, 인공지능은 흰 색이므로 2,3이 인공지능 차례다.
+            //인공지능 차례가 아닐 때는 아래를  하지 않고 그냥 넘긴다.
+            return
+        }
+        var minVal = 999999999 // 최솟값을 확인하는 변수입니다.
+        var maxVal = -999999999
+        var minX = 0 // 최솟값의 x좌표입니다.
+        var minY = 0 // 최솟값의 y좌표입니다.
+        var maxX = 0 // 최댓값의 x좌표입니다.
+        var maxY = 0 // 최댓값의 y좌표입니다.
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcScoreArray[i][j] < minVal) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    minX = i
+                    minY = j
+                    minVal = calcScoreArray[i][j]
+                }
+//                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcPlayerScoreArray[i][j] > maxVal) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+//                    maxX = i
+//                    maxY = j
+//                    maxVal = calcPlayerScoreArray[i][j]
+//                }
+            }
+        }
+//        Log.e("MAXVAL", "x : $maxX, y : $maxY, maxVal : $maxVal")
+        val boardStr = "sBoard".plus(if (minX < 10) "0".plus(minX) else minX)
+            .plus(if (minY < 10) "0".plus(minY) else minY)
+        val target = resources.getIdentifier(boardStr, "id", packageName)
+        val imageButton = findViewById<ImageButton>(target)
+        var soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
+        var soundID = soundPool.load(this, R.raw.sound_stone, 1)
+        soundPool.play(soundID, 1f, 1f, 0, 0, 1f);    // 돌 두는 소리가 나는 부분입니다
+        if (playerColor == "white") setStoneDependOnSize(imageButton, "black", minX, minY)
+        else setStoneDependOnSize(imageButton, "white", minX, minY)
+        turnNum++
+        stoneCheckArray[minX][minY] = true // 좌표를 확인해서 배열에 착수가 되었다고 true 값 대입
+        if (playerColor == "black") stoneColorArray[minX][minY] =
+            2 // 만약 플레이어가 검은돌이면, 인공지능이 둔 위치에 흰색을 착수했다고 표시
+        else if (playerColor == "white") stoneColorArray[minX][minY] = 1
+        setImageClickable()
+
+        //TODO 이 부분을 수정해야 할듯, 그리고 색바꿔주는 부분이 하나 더 있는데, 그 부분을 수정해야 할 것 같음.
+        if (turnNum >= 4) { // 세번째 전에 둔 돌들로부터 최근 돌 마크를 빼고 일반 돌로 바꿔줍니다.
+
+            println()
+            val coX: Int = turnDataList[turnNum - 4].coX
+            val coY: Int = turnDataList[turnNum - 4].coY
+            val boardFinalStone =
+                "sBoard".plus(if (coX < 10) "0".plus(coX) else coX.toString())
+                    .plus(if (coY < 10) "0".plus(coY) else coY.toString())
+            //boardFinalStone에는 원래 돌로 바꿔야할 위치의 좌표값이 들어있습니다.
+            val targetStone: Int =
+                resources.getIdentifier(boardFinalStone, "id", packageName)
+
+            val targetImageButton: ImageButton = findViewById(targetStone)
+            when (turnNum % 4) {
+                3, 2 -> {
+                    checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
+                    if (stoneColorArray[coX][coY] == 1) {
+                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                    } else if (stoneColorArray[coX][coY] == 2) {
+                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                    }
+                }
+                0, 1 -> {
+                    checkStoneArray[coX][coY] = 0 // 체크 된 돌을 일반 돌로 바꾼다
+                    if (stoneColorArray[coX][coY] == 1) {
+                        changetoOriginalStone(targetImageButton, "black", coX, coY)
+                    } else if (stoneColorArray[coX][coY] == 2) {
+                        changetoOriginalStone(targetImageButton, "white", coX, coY)
+                    }
+                }
+            }
+        }
+
+        turnDataList.add(
+            Turn(
+                "ai",
+                turnNum.toString(),
+                minX,
+                minY
+            )
+        ) // TurnDataList에 인공지능이 어디에 착수했는지 기록합니다.
+
+        for (i in calcScoreArray.indices) {
+            for (j in calcScoreArray[i].indices) {
+                if (stoneColorArray[i][j] != 1 && stoneColorArray[i][j] != 2 && calcPlayerScoreArray[i][j] > maxVal) { // 만약 기존 최솟값보다 값이 작다면 최솟값 위치를 갱신해줍니다.
+                    maxX = i
+                    maxY = j
+                    maxVal = calcPlayerScoreArray[i][j]
+                }
+            }
+        }
+    }
+
 
     //어떤 돌이 착수되었는지 확인하기 위해 로그를 띄워주는 함수입니다.
     private fun printBoard() {
         println("---Print Board---")
         for (i in calcScoreArray.indices) {
-            System.out.print("$i ")
+            print("$i ")
             for (j in calcScoreArray[i].indices) {
-                System.out.print("${String.format("% 5d", calcScoreArray[i][j])} ")
+                print("${String.format("% 5d", calcScoreArray[i][j])} ")
             }
-            System.out.println()
+            println()
         }
     }
 

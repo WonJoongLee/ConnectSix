@@ -31,7 +31,7 @@ import kotlin.coroutines.suspendCoroutine
  */
 
 //TODO 당장 해야 할 것
-
+//TODO single player mode에서 처음에 다이아몬드로 체크한 후 다른 곳에 두면, 그 이후에 정상적인 게임이 되지 않는 버그가 있음.
 
 //TODO 추후에 해야 할 것
 //TODO 다크모드 설정 시 화면을 다시 불러오는 문제 해결하기(싱글모드, 멀티 모드에서 모두 문제
