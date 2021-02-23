@@ -173,12 +173,11 @@ class SinglePlayer : AppCompatActivity() {
                             i // 사용자가 다시 이 위치를 클릭하는지 확인하기 위해 confirmX와 confirmY변수에 사용자가 클릭한 i,j를 저장합니다.
                         confirmY = j
                     } else if (stoneClickCnt == 1) { // 두 번째로 클릭한 것이면 해당 위치에 돌을 둡니다.
-                        playerClicked += 1
-                        for (k in turnDataList.indices) {
-                            //print("(${turnDataList[k].coX}, ${turnDataList[k].coY}), ")
-                        }
+
 
                         if (i == confirmX && j == confirmY) { // 두 번째로 돌을 둔 곳이 같은 위치라면 해당 위치에 돌을 둡니다.
+                            playerClicked += 1
+                            println("i : $i, confirmX : $confirmX, j : $j, confirmY : $confirmY")
                             soundPool.play(soundID, 1f, 1f, 0, 0, 1f);    // 돌 두는 소리가 나는 부분입니다
                             turnNum++ // 사용자가 클릭해서 돌을 착수했으므로 turnNum을 증가시킨다.
                             setImageClickable()
@@ -298,6 +297,7 @@ class SinglePlayer : AppCompatActivity() {
                             }
 
                         } else { // 두 번째 클릭한 위치가 다른 위치라면(다이아몬드를 옮겨야 함)
+                            Log.e("들어옴", "들어옴")
                             checkDiamondStone[confirmX][confirmY] =
                                 0 // 해당 위치에서 다이아몬드가 사라졌기 때문에 다시 0으로 원상복귀합니다.
 
@@ -1303,6 +1303,17 @@ class SinglePlayer : AppCompatActivity() {
             for (i in 0..18) {
                 for (j in 0..18) {
                     for (k in 0 until 8) {
+
+                        // 끝 면에서 바둑판 바깥 방향으로 나가려고 하면 continue해서 다음 값 계산으로 넘깁니다.
+                        if (i == 0 && j == 0 && (k == 2 || k == 3 || k == 4 || k == 5 || k == 6)) continue // 왼쪽 위 코너
+                        else if (i == 18 && j == 0 && (k == 0 || k == 1 || k == 2 || k == 3 || k == 4)) continue // 왼쪽 아래 코너
+                        else if (i == 18 && j == 18 && (k == 0 || k == 1 || k == 2 || k == 6 || k == 7)) continue // 오른쪽 아래 코너
+                        else if (i == 0 && j == 18 && (k == 0 || k == 4 || k == 5 || k == 6 || k == 7)) continue // 오른쪽 위 코너
+                        else if (i == 0 && j in 1..17 && (k == 4 || k == 5 || k == 6)) continue // 윗면
+                        else if (i == 18 && j in 1..17 && (k == 0 || k == 1 || k == 2)) continue // 아랫면
+                        else if (i in 1..17 && j == 0 && (k == 2 || k == 3 || k == 4)) continue // 왼쪽 면
+                        else if (i in 1..17 && j == 18 && (k == 0 || k == 7 || k == 6)) continue // 오른쪽 면
+
                         if (stoneColorArray[i][j] == 2 && countStone(i, j, k, 2) == 1) {
                             when (k) {
                                 0 -> calcScore(i + 1, j + 1, -1)
@@ -2054,6 +2065,8 @@ class SinglePlayer : AppCompatActivity() {
     }
 
     private fun setImageClickable() {
+        println("##@@## IMAGECLICKABLE 들어옴 ##@@## ")
+        Log.e("turnNUm ", turnNum.toString())
         if (playerColor == "black") { // 사용자가 먼저 착수 : 0,1일 때 사용자 차례
             when (turnNum % 4) {
                 0, 1 -> { // 플레이어 차례
