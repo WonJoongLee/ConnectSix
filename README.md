@@ -1,5 +1,5 @@
-# Connect Six   
-![aa](https://user-images.githubusercontent.com/57510192/109249799-c2ad5b80-782b-11eb-92b0-00a8f91dadf6.PNG)
+# Connect Six
+[![aa](https://user-images.githubusercontent.com/57510192/109249799-c2ad5b80-782b-11eb-92b0-00a8f91dadf6.PNG)](https://youtu.be/MORldCdF-X4)
 ![11](https://user-images.githubusercontent.com/57510192/109246210-28e2b000-7825-11eb-9e7e-f7e83be906d7.png)
 ![22](https://user-images.githubusercontent.com/57510192/109249498-27b48180-782b-11eb-9b30-140fe4301e42.png)
 
@@ -11,7 +11,7 @@
 
 
 [![Build Status](https://travis-ci.com/WonJoongLee/ConnectSix.svg?branch=master)](https://travis-ci.com/WonJoongLee/ConnectSix)
-## Introduction
+## ✏️Introduction
 Connect your Six today - You can play Connect Six through online with your friends. Also Single play mode was added at version 1.2.0. If you are new to Connect Six, you can practice with AI.
 
 **In gomoku, black, which starts first, has an strong advantage.**
@@ -36,20 +36,21 @@ So, gomoku uses complex rules for the fairness of black and white.
 
 
 
-## Development Environment
+## ⌨️Development Environment
 
  - Android Studio 4.1.2
  - Firebase Realtime Database
 
-## Application Version
+## 🔢Application Version
  - **1.1.0 : Dark mode has been added.**
  - **1.2.0 : Single play mode has been added.**
  - compileSdkVersion 30
  - minSdkVersion 21
  - targetSdkVersion 30
 
-## ETC
+## 🔍ETC
  - No other game engine has been used.
  - DFS algorithm was used to detect connected stones.
  - English and Korean are provided.
+ - Developer : [WonJoong Lee](https://github.com/WonJoongLee)
  - Contact : realjoong@gmail.com
